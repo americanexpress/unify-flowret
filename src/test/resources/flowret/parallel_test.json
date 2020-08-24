@@ -1,0 +1,90 @@
+{
+  "journey": {
+    "global_codebase_version": 1,
+    "name": "parallel_test",
+    "tickets": [
+      {
+        "name": "reset",
+        "step": "start"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "id",
+        "type": "string",
+        "value": "id1"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "start",
+        "next": "route_1"
+      },
+      {
+        "name": "route_1",
+        "type": "p_route",
+        "component": "route_1",
+        "branches": [
+          {
+            "name": "1",
+            "next": "step_2"
+          },
+          {
+            "name": "2",
+            "next": "step_4"
+          },
+          {
+            "name": "3",
+            "next": "step_6"
+          }
+        ]
+      },
+      {
+        "name": "step_2",
+        "component": "step_2",
+        "next": "step_3"
+      },
+      {
+        "name": "step_3",
+        "component": "step_3",
+        "next": "step_3a"
+      },
+      {
+        "name": "step_3a",
+        "component": "step_3a",
+        "next": "join_1"
+      },
+      {
+        "name": "step_4",
+        "component": "step_4",
+        "next": "step_5"
+      },
+      {
+        "name": "step_5",
+        "component": "step_5",
+        "next": "join_1"
+      },
+      {
+        "name": "step_6",
+        "component": "step_6",
+        "next": "step_7"
+      },
+      {
+        "name": "step_7",
+        "component": "step_7",
+        "next": "join_1"
+      },
+      {
+        "name": "join_1",
+        "type": "p_join",
+        "next": "step_8"
+      },
+      {
+        "name": "step_8",
+        "component": "step_8",
+        "next": "end"
+      }
+    ]
+  }
+}

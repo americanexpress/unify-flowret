@@ -1,0 +1,39 @@
+{
+  "id": "{\"type\":\"string\"}",
+  "type": "{\"type\":\"string\"}",
+  "journey": {
+    "name": "{\"type\":\"string\"}",
+    "tickets": [
+      {
+        "jdocs_arr_pk": "{\"field\":\"name\"}",
+        "name": "{\"type\":\"string\"}",
+        "step": "{\"type\":\"string\"}"
+      }
+    ],
+    "process_variables": [
+      {
+        "jdocs_arr_pk": "{\"field\":\"name\"}",
+        "name": "{\"type\":\"string\"}",
+        "type": "{\"type\":\"string\"}",
+        "value": "{\"type\":\"string\"}",
+        "comments": "{\"type\":\"string\"}"
+      }
+    ],
+    "flow": [
+      {
+        "jdocs_arr_pk": "{\"field\":\"name\"}",
+        "name": "{\"type\":\"string\"}",
+        "type": "{\"type\":\"string\"}",
+        "component": "{\"type\":\"string\"}",
+        "next": "{\"type\":\"string\"}",
+        "comment": "{\"type\":\"string\"}",
+        "branches": [
+          {
+            "name": "{\"type\":\"string\"}",
+            "next": "{\"type\":\"string\"}"
+          }
+        ]
+      }
+    ]
+  }
+}

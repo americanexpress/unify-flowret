@@ -1,0 +1,33 @@
+{
+  "id": "{\"type\":\"string\"}",
+  "type": "{\"type\":\"string\"}",
+  "process_info": {
+    "step": "{\"type\":\"string\"}",
+    "component": "{\"type\":\"string\"}",
+    "pend_exec_path": "{\"type\":\"string\"}",
+    "ts": "{\"type\":\"long\"}",
+    "is_complete": "{\"type\":\"boolean\"}",
+    "ticket": "{\"type\":\"string\"}",
+    "process_variables": [
+      {
+        "jdocs_arr_pk": "{\"field\":\"name\"}",
+        "name": "{\"type\":\"string\"}",
+        "value": "{\"type\":\"string\"}",
+        "type": "{\"type\":\"string\"}"
+      }
+    ],
+    "exec_paths": [
+      {
+        "jdocs_arr_pk": "{\"field\":\"name\"}",
+        "name": "{\"type\":\"string\"}",
+        "status": "{\"type\":\"string\"}",
+        "step": "{\"type\":\"string\"}",
+        "comp_name": "{\"type\":\"string\"}",
+        "pend_workbasket": "{\"type\":\"string\"}",
+        "prev_pend_workbasket": "{\"type\":\"string\"}",
+        "tbc_sla_workbasket": "{\"type\":\"string\"}",
+        "unit_response_type": "{\"type\":\"string\"}"
+      }
+    ]
+  }
+}

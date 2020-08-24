@@ -1,0 +1,29 @@
+{
+  "journey": {
+    "name": "test_persist",
+    "flow": [
+      {
+        "comment": "if unit type is step, then type field is optional",
+        "name": "start",
+        "type": "step",
+        "component": "c1",
+        "next": "step2"
+      },
+      {
+        "name": "step2",
+        "component": "c2",
+        "next": "step3"
+      },
+      {
+        "name": "step3",
+        "type": "persist",
+        "next": "step4"
+      },
+      {
+        "name": "step4",
+        "component": "c4",
+        "next": "end"
+      }
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "journey": {
+    "name": "parallel_parts_test",
+    "tickets": [
+      {
+        "name": "reset",
+        "step": "start"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "pcn",
+        "type": "string",
+        "value": "pcn1"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "start",
+        "next": "route_0"
+      },
+      {
+        "name": "route_0",
+        "type": "s_route",
+        "component": "route_0",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "route_1"
+          },
+          {
+            "name": "no",
+            "next": "step_4"
+          }
+        ]
+      },
+      {
+        "name": "route_1",
+        "type": "p_route_dynamic",
+        "component": "route_1_c",
+        "next": "step_1"
+      },
+      {
+        "name": "step_1",
+        "component": "step_1",
+        "next": "step_2"
+      },
+      {
+        "name": "step_2",
+        "component": "step_2",
+        "next": "step_3"
+      },
+      {
+        "name": "step_3",
+        "component": "step_3",
+        "next": "join_1"
+      },
+      {
+        "name": "join_1",
+        "type": "p_join",
+        "next": "route_0"
+      },
+      {
+        "name": "step_4",
+        "component": "step_4",
+        "next": "end"
+      }
+    ]
+  }
+}

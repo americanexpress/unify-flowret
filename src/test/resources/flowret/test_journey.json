@@ -1,0 +1,319 @@
+{
+  "journey": {
+    "name": "test_journey",
+    "tickets": [
+      {
+        "name": "final_step",
+        "step": "step29"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "id",
+        "type": "string",
+        "value": ""
+      }
+    ],
+    "flow": [
+      {
+        "comment": "if unit type is step, then type field is optional",
+        "name": "start",
+        "type": "step",
+        "component": "start_comp",
+        "user_data": "Hello start comp",
+        "next": "step2"
+      },
+      {
+        "name": "step2",
+        "component": "comp2",
+        "user_data": "Hello comp2",
+        "next": "step3"
+      },
+      {
+        "name": "step3",
+        "component": "comp3",
+        "next": "step4"
+      },
+      {
+        "name": "step4",
+        "component": "comp4",
+        "next": "route1"
+      },
+      {
+        "name": "route1",
+        "type": "s_route",
+        "component": "rcomp1",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "step5"
+          },
+          {
+            "name": "no",
+            "next": "step6"
+          }
+        ]
+      },
+      {
+        "name": "step5",
+        "component": "comp5",
+        "next": "step6"
+      },
+      {
+        "name": "step6",
+        "component": "comp6",
+        "next": "step7"
+      },
+      {
+        "name": "step7",
+        "component": "comp7",
+        "next": "route2"
+      },
+      {
+        "name": "route2",
+        "type": "s_route",
+        "component": "rcomp2",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "step8"
+          },
+          {
+            "name": "no",
+            "next": "step9"
+          }
+        ]
+      },
+      {
+        "name": "step8",
+        "component": "comp8",
+        "next": "step9"
+      },
+      {
+        "name": "step9",
+        "component": "comp9",
+        "next": "step10"
+      },
+      {
+        "name": "step10",
+        "component": "comp10",
+        "next": "step11"
+      },
+      {
+        "name": "step11",
+        "component": "comp11",
+        "next": "step12"
+      },
+      {
+        "name": "step12",
+        "component": "comp12",
+        "next": "step13"
+      },
+      {
+        "name": "step13",
+        "component": "comp13",
+        "next": "step14"
+      },
+      {
+        "name": "step14",
+        "component": "comp14",
+        "next": "step15"
+      },
+      {
+        "name": "step15",
+        "component": "comp15",
+        "next": "route3"
+      },
+      {
+        "name": "route3",
+        "type": "s_route",
+        "component": "rcomp2",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "step16"
+          },
+          {
+            "name": "no",
+            "next": "step17"
+          }
+        ]
+      },
+      {
+        "name": "step16",
+        "component": "comp16",
+        "next": "step17"
+      },
+      {
+        "name": "step17",
+        "component": "comp17",
+        "next": "step18"
+      },
+      {
+        "name": "step18",
+        "component": "comp18",
+        "next": "step19"
+      },
+      {
+        "name": "step19",
+        "component": "comp19",
+        "next": "step20"
+      },
+      {
+        "name": "step20",
+        "component": "comp20",
+        "next": "step21"
+      },
+      {
+        "name": "step21",
+        "component": "comp21",
+        "next": "route4"
+      },
+      {
+        "name": "route4",
+        "type": "s_route",
+        "component": "rcomp4",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "route5"
+          },
+          {
+            "name": "no",
+            "next": "step17"
+          }
+        ]
+      },
+      {
+        "name": "route5",
+        "type": "s_route",
+        "component": "rcomp5",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "step22"
+          },
+          {
+            "name": "no",
+            "next": "step23"
+          }
+        ]
+      },
+      {
+        "name": "step22",
+        "component": "comp22",
+        "next": "step23_a"
+      },
+      {
+        "name": "step23_a",
+        "type": "pause",
+        "next": "step23"
+      },
+      {
+        "name": "step23",
+        "component": "comp23",
+        "next": "route6"
+      },
+      {
+        "name": "route6",
+        "type": "s_route",
+        "component": "rcomp6",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "route8"
+          },
+          {
+            "name": "no",
+            "next": "step24"
+          }
+        ]
+      },
+      {
+        "name": "step24",
+        "component": "comp24",
+        "next": "step25"
+      },
+      {
+        "name": "step25",
+        "component": "comp25",
+        "next": "step26"
+      },
+      {
+        "name": "step26",
+        "component": "comp26",
+        "next": "step27"
+      },
+      {
+        "name": "step27",
+        "component": "comp27",
+        "next": "step28"
+      },
+      {
+        "name": "step28",
+        "component": "comp28",
+        "next": "route7"
+      },
+      {
+        "name": "route7",
+        "type": "s_route",
+        "component": "rcomp7",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "route8"
+          },
+          {
+            "name": "no",
+            "next": "step29"
+          }
+        ]
+      },
+      {
+        "name": "route8",
+        "type": "s_route",
+        "component": "rcomp2",
+        "branches": [
+          {
+            "name": "yes",
+            "next": "step29"
+          },
+          {
+            "name": "no",
+            "next": "step31"
+          }
+        ]
+      },
+      {
+        "name": "step29",
+        "component": "comp29",
+        "next": "step30"
+      },
+      {
+        "name": "step30",
+        "component": "comp30",
+        "next": "end"
+      },
+      {
+        "name": "step31",
+        "component": "comp31",
+        "next": "step32"
+      },
+      {
+        "name": "step32",
+        "component": "comp32",
+        "next": "step33"
+      },
+      {
+        "name": "step33",
+        "component": "comp33",
+        "next": "step34"
+      },
+      {
+        "name": "step34",
+        "component": "comp34",
+        "next": "step17"
+      }
+    ]
+  }
+}

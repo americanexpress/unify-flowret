@@ -1,0 +1,79 @@
+**/target
+
+######################
+# Eclipse
+######################
+*.pydevproject
+.project
+.metadata
+.gradle
+.idea
+/bin/**
+/tmp/**
+/tmp/**/*
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.classpath
+.settings/**
+.loadpath
+*.launch
+.cproject
+.buildpath
+
+######################
+# Netbeans
+######################
+nb-configuration*
+
+######################
+# Intellij
+######################
+.idea/**
+*.iml
+*.iws
+*.ipr
+*.ids
+*.orig
+
+######################
+# Maven
+######################
+/log/**
+
+######################
+# Package Files
+######################
+*.war
+*.ear
+*.db
+
+######################
+# Windows
+######################
+# Windows image file caches
+Thumbs.db
+
+# Folder config file
+Desktop.ini
+
+######################
+# Mac OSX
+######################
+.DS_Store
+.svn
+
+# Thumbnails
+._*
+
+######################
+# Others
+######################
+*.class
+*.*~
+*~
+.merge_file*
+**/nbactions.xml
+/bin/
