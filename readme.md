@@ -11,6 +11,9 @@ orchestrator we have built. It is lightweight, small, a pleasure to use and budd
 ---
 
 #### Getting Flowret package
+
+[ ![Download](https://api.bintray.com/packages/americanexpress/maven/com.americanexpress.unify.flowret/images/download.svg) ](https://bintray.com/americanexpress/maven/com.americanexpress.unify.flowret/_latestVersion)
+
 Flowret is available as a jar file in Bintray JCenter with the following Maven coordinates. The latest
 version is available in the version badge on this page:
 
