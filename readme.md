@@ -78,8 +78,6 @@ Make sure that log4j configuration file is found in the class path.
 
 ---
 
----
-
 #### Glossary
 Term | Description
 ---- | -----------
