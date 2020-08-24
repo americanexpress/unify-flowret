@@ -10,17 +10,64 @@ orchestrator we have built. It is lightweight, small, a pleasure to use and budd
 
 ---
 
-#### Flowret Maven Cordinates
-Flowret is packaged as a jar file which can be included in your application with the following
-Maven coordinates:
+#### Getting Flowret package
+Flowret is available as a jar file in Bintray JCenter with the following Maven coordinates. The latest
+version is available in the version badge on this page:
 
-```maven
-<dependency>
-    <groupId>com.americanexpress.unify.flowret</groupId>
-    <artifactId>unify-flowret</artifactId>
-    <version>0.0.1</version>
-</dependency>
-```
+````pom
+<groupId>com.americanexpress.unify.flowret</groupId>
+<artifactId>unify-flowret</artifactId>
+<version>x.y.z</version>
+<type>pom</type>
+````
+
+In order to fetch Flowret from JCenter using Maven, include the following in your Maven settings.xml file
+as shown below.
+
+````pom
+<?xml version="1.0" encoding="UTF-8" ?>
+<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'
+          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+    
+    <profiles>
+        <profile>
+            <repositories>
+                <repository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>central</id>
+                    <name>bintray</name>
+                    <url>https://jcenter.bintray.com</url>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                    <id>central</id>
+                    <name>bintray-plugins</name>
+                    <url>https://jcenter.bintray.com</url>
+                </pluginRepository>
+            </pluginRepositories>
+            <id>bintray</id>
+        </profile>
+    </profiles>
+    <activeProfiles>
+        <activeProfile>bintray</activeProfile>
+    </activeProfiles>
+</settings>
+````
+
+For Gradle, please use the following:
+````gradle
+repositories {
+    maven {
+        url  "https://jcenter.bintray.com" 
+    }
+}
+````
 
 ---
 
@@ -30,14 +77,6 @@ Flowret works with Java 8 and later.
 Make sure that log4j configuration file is found in the class path.
 
 ---
-
-#### Flowret Stash Repo
-Flowret source code is stored in the following repo. The branch name containing the latest code
-is develop.
-
-```html
-https://stash.aexp.com/stash/scm/aim200005266/unify-flowret.git
-```
 
 ---
 
@@ -1364,3 +1403,29 @@ Read the API documentation of Document class to get into API levels details.
 Go through the unit test cases in the source code. Unit test cases are available in the location `src/test`
 
 Provide us feedback. We would love to hear from you.
+
+---
+
+##### Author and lead maintainer:
+Deepak Arora, deepak.arora5@aexp.com, GitHub: @deepakarora3, Twitter: @DeepakAroraHi
+
+---
+
+## Contributing
+
+We welcome Your interest in the American Express Open Source Community on Github. Any Contributor to
+any Open Source Project managed by the American Express Open Source Community must accept and sign
+an Agreement indicating agreement to the terms below. Except for the rights granted in this 
+Agreement to American Express and to recipients of software distributed by American Express, You
+reserve all right, title, and interest, if any, in and to Your Contributions. Please
+[fill out the Agreement](https://cla-assistant.io/americanexpress/unify-amexdeus).
+
+## License
+
+Any contributions made under this project will be governed by the
+[Apache License 2.0](./LICENSE.txt).
+
+## Code of Conduct
+
+This project adheres to the [American Express Community Guidelines](./CODE_OF_CONDUCT.md). By
+participating, you are expected to honor these guidelines.
