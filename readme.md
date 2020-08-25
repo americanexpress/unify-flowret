@@ -1407,8 +1407,8 @@ Provide us feedback. We would love to hear from you.
 
 ---
 
-##### Author and lead maintainer:
-Deepak Arora, deepak.arora5@aexp.com, GitHub: @deepakarora3, Twitter: @DeepakAroraHi
+##### Author:
+Deepak Arora, GitHub: @deepakarora3, Twitter: @DeepakAroraHi
 
 ---
 
