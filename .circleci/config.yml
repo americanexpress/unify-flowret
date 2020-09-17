@@ -18,7 +18,7 @@ jobs:
       - restore_cache:
           key: unify-flowret-{{ checksum "pom.xml" }}
 
-      - run: mvn dependency:go-offline
+      - run: mvn --settings ".circle.settings.xml" dependency:go-offline
 
       - save_cache: # saves the project dependencies
           paths:
