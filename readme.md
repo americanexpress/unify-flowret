@@ -1,3 +1,6 @@
+![Simple Workflow](flowret.png)
+
+
 ### Flowret – A lightweight Java based orchestration engine
 
 ---
