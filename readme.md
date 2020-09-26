@@ -24,7 +24,6 @@ version is available in the version badge on this page:
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
 <version>x.y.z</version>
-<type>pom</type>
 ````
 
 In order to fetch Flowret from JCenter using Maven, include the following in your Maven settings.xml file
