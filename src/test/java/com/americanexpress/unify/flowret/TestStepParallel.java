@@ -41,9 +41,9 @@ public class TestStepParallel implements InvokableStep {
     String comp = pc.getCompName();
     StepResponse response = null;
 
-    response = testClean();
+    // response = testClean();
     //    response = testErrorPendNoTickets();
-    //    response = testOKPendNoTickets();
+    response = testOKPendNoTickets();
     //    response = testOKProceedWithTicket();
     //    response = testErrorPendAndTicket();
     //    response = testErrorPendAndTicket1();
@@ -92,8 +92,9 @@ public class TestStepParallel implements InvokableStep {
     String comp = pc.getCompName();
     StepResponse response = null;
 
-    if ((comp.equalsIgnoreCase("step_4")) || (comp.equalsIgnoreCase("step_3a"))) {
-      response = get(75, UnitResponseType.OK_PEND, UnitResponseType.OK_PROCEED);
+    //    if ((comp.equalsIgnoreCase("step_4")) || (comp.equalsIgnoreCase("step_3a"))) {
+    if (comp.equalsIgnoreCase("step_8")) {
+      response = get(100, UnitResponseType.OK_PEND, UnitResponseType.OK_PROCEED);
     }
     else {
       response = get(100, UnitResponseType.OK_PROCEED, null);

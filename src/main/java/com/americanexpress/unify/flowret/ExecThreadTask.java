@@ -685,11 +685,21 @@ public class ExecThreadTask implements Runnable {
       ExecPath pendedEp = null;
       List<ExecPath> paths = pi.getExecPaths();
       for (ExecPath path : paths) {
+        // ignore self
+        if (path.getName().equals(path)) {
+          continue;
+        }
+
         if (execPath.isSibling(path)) {
           if (path.getStatus() != ExecPathStatus.COMPLETED) {
             isComplete = false;
-            pendedEp = path;
-            break;
+
+            // here we need to set the pended ep only if we find that the ep has indeed pended
+            // we cannot assume that just because the sibling has not completed that it has pended
+            if (path.getPendWorkBasket().isEmpty() == false) {
+              pendedEp = path;
+              break;
+            }
           }
         }
       }
@@ -707,7 +717,9 @@ public class ExecThreadTask implements Runnable {
         }
       }
       else {
-        pi.getSetter().setPendExecPath(pendedEp.getName());
+        if (pendedEp != null) {
+          pi.getSetter().setPendExecPath(pendedEp.getName());
+        }
       }
     }
     finally {

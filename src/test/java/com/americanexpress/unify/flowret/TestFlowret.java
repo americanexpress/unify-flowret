@@ -77,7 +77,7 @@ public class TestFlowret {
 
   @Test
   protected void testJourney() {
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
   }
 

@@ -83,6 +83,11 @@
       {
         "name": "step_8",
         "component": "step_8",
+        "next": "step_9"
+      },
+      {
+        "name": "step_9",
+        "component": "step_9",
         "next": "end"
       }
     ]

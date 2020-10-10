@@ -73,16 +73,16 @@ public class TestStep implements InvokableStep {
       }
 
 
-      //      if (name.equalsIgnoreCase("comp30")) {
-      //        int temp = RandomGen.get(1, 4);
-      //        if (temp <= 3) {
-      //          response = new StepResponse(UnitResponseType.ERROR_PEND, null, "err_wb");
-      //        }
-      //        else {
-      //          response = new StepResponse(UnitResponseType.OK_PROCEED, null, null);
-      //        }
-      //        break;
-      //      }
+      if (name.equalsIgnoreCase("comp30")) {
+        int temp = RandomGen.get(1, 4);
+        if (temp <= 3) {
+          response = new StepResponse(UnitResponseType.ERROR_PEND, null, "err_wb");
+        }
+        else {
+          response = new StepResponse(UnitResponseType.OK_PROCEED, null, null);
+        }
+        break;
+      }
 
       response = new StepResponse(UnitResponseType.OK_PROCEED, null, null);
       break;
