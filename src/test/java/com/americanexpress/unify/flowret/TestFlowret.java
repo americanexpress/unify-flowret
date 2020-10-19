@@ -58,7 +58,7 @@ public class TestFlowret {
       String slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
 
       ProcessContext pc = null;
-      if (new File(dirPath + "flowret_journey-1.json").exists() == false) {
+      if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
         pc = rts.startCase("1", json, null, slaJson);
       }
       else {

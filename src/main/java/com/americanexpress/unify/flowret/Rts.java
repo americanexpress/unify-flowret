@@ -77,17 +77,29 @@ public final class Rts {
     }
   }
 
+  private void abortIfStarted(String caseId) {
+    String key = CONSTS_FLOWRET.DAO.PROCESS_INFO + CONSTS_FLOWRET.DAO.SEP + caseId;
+
+    Document d = dao.read(key);
+    if (d != null) {
+      throw new UnifyException("flowret_err_1", caseId);
+    }
+  }
+
   public ProcessContext startCase(String caseId, String journeyJson, ProcessVariables pvs, String journeySlaJson) {
     if (pvs == null) {
       pvs = new ProcessVariables();
     }
 
-    String key = CONSTS_FLOWRET.DAO.JOURNEY + CONSTS_FLOWRET.DAO.SEP + caseId;
+    abortIfStarted(caseId);
 
-    // check if the document already exists
+    // check if the journey definition file exists. If it does, then we need to treat it as a case of
+    // crash where the process was successfully started but the first step could not be executed
+    String key = CONSTS_FLOWRET.DAO.JOURNEY + CONSTS_FLOWRET.DAO.SEP + caseId;
+    boolean hasAlreadyStarted = false;
     Document d = dao.read(key);
     if (d != null) {
-      throw new UnifyException("flowret_err_1", caseId);
+      hasAlreadyStarted = true;
     }
 
     // read the process definition and get process info
@@ -108,19 +120,22 @@ public final class Rts {
       pi.setProcessVariable(pv);
     }
 
-    logger.info("Case id -> " + pi.getCaseId() + ", successfully created case");
-
-    // invoke event handler
     boolean bContinue = true;
-    ProcessContext pc = ProcessContext.forEvent(EventType.ON_PROCESS_START, this, ".");
-    try {
-      invokeEventHandler(EventType.ON_PROCESS_START, pc);
-    }
-    catch (Exception e) {
-      bContinue = false;
-      logger.info("Case id -> " + pi.getCaseId() + ", aborting as application exception encountered while raising event");
-      logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
-      logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
+    ProcessContext pc = null;
+    if (hasAlreadyStarted == false) {
+      logger.info("Case id -> " + pi.getCaseId() + ", successfully created case");
+
+      // invoke event handler
+      pc = ProcessContext.forEvent(EventType.ON_PROCESS_START, this, ".");
+      try {
+        invokeEventHandler(EventType.ON_PROCESS_START, pc);
+      }
+      catch (Exception e) {
+        bContinue = false;
+        logger.info("Case id -> " + pi.getCaseId() + ", aborting as application exception encountered while raising event");
+        logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
+        logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
+      }
     }
 
     // start case
