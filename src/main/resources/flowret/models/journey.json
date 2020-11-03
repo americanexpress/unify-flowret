@@ -26,6 +26,7 @@
         "type": "{\"type\":\"string\"}",
         "component": "{\"type\":\"string\"}",
         "next": "{\"type\":\"string\"}",
+        "user_data": "{\"type\":\"string\"}",
         "comment": "{\"type\":\"string\"}",
         "branches": [
           {
