@@ -16,15 +16,15 @@ package com.americanexpress.unify.flowret;
 
 import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.UnifyException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /*
  * @author Deepak Arora
  */
 public final class Wms {
 
-  private static Logger logger = LogManager.getLogger(Wms.class);
+  private static Logger logger = LoggerFactory.getLogger(Wms.class);
 
   // variables are protected so that they can be accessed by classes in the same package
   protected FlowretDao dao = null;

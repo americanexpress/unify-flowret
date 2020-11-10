@@ -17,8 +17,8 @@ package com.americanexpress.unify.flowret;
 import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.JDocument;
 import com.americanexpress.unify.jdocs.UnifyException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -27,7 +27,7 @@ import java.util.List;
  */
 public final class Rts {
 
-  private static Logger logger = LogManager.getLogger(Rts.class);
+  private static Logger logger = LoggerFactory.getLogger(Rts.class);
 
   // variables are protected so that they can be accessed by classes in the same package
   protected FlowretDao dao = null;

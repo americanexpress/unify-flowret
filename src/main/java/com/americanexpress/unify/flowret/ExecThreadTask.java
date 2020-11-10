@@ -16,8 +16,8 @@ package com.americanexpress.unify.flowret;
 
 import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.UnifyException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +29,7 @@ import java.util.concurrent.Future;
  */
 public class ExecThreadTask implements Runnable {
 
-  private static Logger logger = LogManager.getLogger(ExecThreadTask.class);
+  private static Logger logger = LoggerFactory.getLogger(ExecThreadTask.class);
 
   // these variables are shared across threads
   private Rts rts = null;

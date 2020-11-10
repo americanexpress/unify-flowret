@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration shutdownHook="disable">
+    <Appenders>
+        <Console name="stdout">
+            <!--<PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5p [%c] - %m%n"/>-->
+            <PatternLayout pattern="%d [%-50.50c] %-5level: %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Root level="INFO" additivity="true">
+            <AppenderRef ref="stdout"/>
+        </Root>
+    </Loggers>
+</Configuration>

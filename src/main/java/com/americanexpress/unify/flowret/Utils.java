@@ -15,8 +15,8 @@
 package com.americanexpress.unify.flowret;
 
 import com.americanexpress.unify.jdocs.*;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class Utils {
 
-  private static Logger logger = LogManager.getLogger(Utils.class);
+  private static Logger logger = LoggerFactory.getLogger(Utils.class);
 
   protected static ProcessInfo getProcessInfo(FlowretDao dao, String caseId, ProcessDefinition pd) {
     ProcessInfo pi = new ProcessInfo(caseId, pd);
