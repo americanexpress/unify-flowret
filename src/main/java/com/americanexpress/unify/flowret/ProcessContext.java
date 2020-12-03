@@ -125,7 +125,7 @@ public class ProcessContext {
         break;
 
       case ON_TICKET_RAISED:
-        pc.stepName = pd.getTicket(pi.getTicket()).getStep();
+        pc.stepName = pi.getExecPath(epName).getStep();
         pc.compName = pd.getUnit(pc.stepName).getComponentName();
         pc.userData = pd.getUnit(pc.stepName).getUserData();
         pc.compType = pd.getUnit(pc.stepName).getType();

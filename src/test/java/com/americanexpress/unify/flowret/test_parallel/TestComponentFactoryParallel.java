@@ -12,22 +12,26 @@
  * the License.
  */
 
-package com.americanexpress.unify.flowret;
+package com.americanexpress.unify.flowret.test_parallel;
+
+import com.americanexpress.unify.flowret.ProcessComponentFactory;
+import com.americanexpress.unify.flowret.ProcessContext;
+import com.americanexpress.unify.flowret.UnitType;
 
 /*
  * @author Deepak Arora
  */
-public class TestComponentFactory implements ProcessComponentFactory {
+public class TestComponentFactoryParallel implements ProcessComponentFactory {
 
   @Override
   public Object getObject(ProcessContext pc) {
     Object o = null;
 
     if ((pc.getCompType() == UnitType.S_ROUTE) || (pc.getCompType() == UnitType.P_ROUTE) || (pc.getCompType() == UnitType.P_ROUTE_DYNAMIC)) {
-      o = new TestRule(pc);
+      o = new TestRuleParallel(pc);
     }
     else if (pc.getCompType() == UnitType.STEP) {
-      o = new TestStep(pc);
+      o = new TestStepParallel(pc);
     }
 
     return o;

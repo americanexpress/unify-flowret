@@ -38,6 +38,8 @@ public class ProcessInfo {
   private final ProcessDefinition pd;
   private ReentrantLock lock = new ReentrantLock(true);
 
+  private boolean isComplete = false;
+
   // shared variables that will be updated by threads
   private Map<String, ProcessVariable> pvMap = new ConcurrentHashMap<>();
 
@@ -97,17 +99,28 @@ public class ProcessInfo {
       this.pendExecPath = pendExecPath;
     }
     else {
+      // if the pend is not on "." execution path then
       // we need to set the pend exec path to the one that is deepest in the hierarchy
       // we need to do this so that the unravelling can take place correctly
       // we determine this by counting the number of "."
-      int oldDepth = BaseUtils.getCount(this.pendExecPath, '.');
-      int newDepth = BaseUtils.getCount(pendExecPath, '.');
 
-      if (newDepth > oldDepth) {
+      // however if the pend happened in the "." execution path, then it means that we have
+      // moved ahead of parallel processing in the branches (due to a ticket) and in this case
+      // the pends in the previous branches does not matter
+
+      if (pendExecPath.equals(".")) {
         this.pendExecPath = pendExecPath;
       }
       else {
-        // do nothing
+        int oldDepth = BaseUtils.getCount(this.pendExecPath, '.');
+        int newDepth = BaseUtils.getCount(pendExecPath, '.');
+
+        if (newDepth > oldDepth) {
+          this.pendExecPath = pendExecPath;
+        }
+        else {
+          // do nothing
+        }
       }
     }
   }
@@ -180,22 +193,18 @@ public class ProcessInfo {
   }
 
   protected boolean isCaseCompleted() {
+    return isComplete;
+  }
+
+  protected void setCaseCompleted() {
+    this.isComplete = true;
+  }
+
+  protected void clearPendWorkBaskets() {
     List<ExecPath> paths = new ArrayList<>(execPaths.values());
-    boolean completed = true;
-
-    if (paths.size() == 0) {
-      completed = false;
+    for (ExecPath path : paths) {
+      path.setPendWorkBasket("");
     }
-    else {
-      for (ExecPath path : paths) {
-        if (path.getStatus() != ExecPathStatus.COMPLETED) {
-          completed = false;
-          break;
-        }
-      }
-    }
-
-    return completed;
   }
 
   protected Document getDocument() {
@@ -203,12 +212,12 @@ public class ProcessInfo {
 
     // write last executed unit details
     if (lastUnitExecuted == null) {
-      d.setString("$.process_info.step", "end");
-      d.setString("$.process_info.comp_name", "end");
+      d.setString("$.process_info.last_executed_step", "end");
+      d.setString("$.process_info.last_executed_comp_name", "end");
     }
     else {
-      d.setString("$.process_info.step", lastUnitExecuted.getName());
-      d.setString("$.process_info.comp_name", lastUnitExecuted.getComponentName());
+      d.setString("$.process_info.last_executed_step", lastUnitExecuted.getName());
+      d.setString("$.process_info.last_executed_comp_name", lastUnitExecuted.getComponentName());
     }
 
     // write pend info
@@ -218,7 +227,7 @@ public class ProcessInfo {
     d.setLong("$.process_info.ts", Instant.now().toEpochMilli());
 
     // write isComplete status
-    d.setBoolean("$.process_info.is_complete", isCaseCompleted());
+    d.setBoolean("$.process_info.is_complete", isComplete);
 
     // write process variables
     int i = 0;
@@ -248,6 +257,9 @@ public class ProcessInfo {
 
       s = path.getPendWorkBasket();
       d.setString("$.process_info.exec_paths[%].pend_workbasket", s, i + "");
+
+      s = path.getTicket();
+      d.setString("$.process_info.exec_paths[%].ticket", s, i + "");
 
       ErrorTuple et = path.getPendErrorTuple();
       d.setString("$.process_info.exec_paths[%].pend_error.code", et.getErrorCode(), i + "");

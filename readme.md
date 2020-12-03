@@ -219,7 +219,7 @@ may write the data back to database and release memory
     1. "ts" - the timestamp when the status was saved
 1. On resuming such an orphaned application, the correct state is automatically
 reconstructed and process resumes from the state it recorded last
-1. An application batch process could scan the state files to identify
+1. An application batch process could scan the process info files to identify
 cases which have pend_exec_path as empty (meaning that the process is running),
 is_complete as false and a timestamp which is x units exceeded
 (as per application needs) and could resume such cases in a batch mode
@@ -897,7 +897,7 @@ When the condition for this pend has cleared and the process is resumed, Flowret
 any other pends that have not yet been returned to the application. If there are, the next pend will be returned
 immediately without further execution on any branch till the last pend is resolved.
 
-In future versions, a feature will be provided for Flowret to return a list of pends to the application. 
+In future versions, a feature may be provided for Flowret to return a list of pends to the application. 
 
 ---
 
@@ -938,8 +938,8 @@ A sample file is shown below:
 ```json
 {
   "process_info" : {
-    "step" : "step_2",
-    "component" : "get_part_info",
+    "last_executed_step" : "step_2",
+    "last_executed_comp_name" : "get_part_info",
     "pend_exec_path" : "",
     "ts" : 1584475244618,
     "is_complete" : false,
@@ -955,6 +955,7 @@ A sample file is shown below:
       "comp_name" : "get_part_info",
       "unit_response_type" : "ok_proceed",
       "pend_workbasket" : "some_wb",
+      "ticket": "",
       "pend_error" : {
         "code" : "",
         "message" : "",

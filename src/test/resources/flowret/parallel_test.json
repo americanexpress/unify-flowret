@@ -5,7 +5,11 @@
     "tickets": [
       {
         "name": "reset",
-        "step": "start"
+        "step": "step_1"
+      },
+      {
+        "name": "reject",
+        "step": "step_4"
       }
     ],
     "process_variables": [
@@ -19,75 +23,65 @@
       {
         "name": "start",
         "component": "start",
+        "next": "step_1"
+      },
+      {
+        "name": "step_1",
+        "component": "step_1_comp",
         "next": "route_1"
       },
       {
         "name": "route_1",
         "type": "p_route",
-        "component": "route_1",
+        "component": "route_1_comp",
         "branches": [
           {
             "name": "1",
-            "next": "step_2"
+            "next": "step_2_1"
           },
           {
             "name": "2",
-            "next": "step_4"
+            "next": "step_2_2"
           },
           {
             "name": "3",
-            "next": "step_6"
+            "next": "step_2_3"
           }
         ]
       },
       {
-        "name": "step_2",
-        "component": "step_2",
-        "next": "step_3"
-      },
-      {
-        "name": "step_3",
-        "component": "step_3",
-        "next": "step_3a"
-      },
-      {
-        "name": "step_3a",
-        "component": "step_3a",
+        "name": "step_2_1",
+        "component": "step_2_1_comp",
         "next": "join_1"
       },
       {
-        "name": "step_4",
-        "component": "step_4",
-        "next": "step_5"
-      },
-      {
-        "name": "step_5",
-        "component": "step_5",
+        "name": "step_2_2",
+        "component": "step_2_2_comp",
         "next": "join_1"
       },
       {
-        "name": "step_6",
-        "component": "step_6",
-        "next": "step_7"
-      },
-      {
-        "name": "step_7",
-        "component": "step_7",
+        "name": "step_2_3",
+        "component": "step_2_3_comp",
         "next": "join_1"
       },
       {
         "name": "join_1",
         "type": "p_join",
-        "next": "step_8"
+        "next": "step_3"
       },
       {
-        "name": "step_8",
-        "component": "step_8",
-        "next": "step_9"
+        "name": "step_3",
+        "component": "step_3_comp",
+        "next": "end"
       },
       {
-        "name": "step_9",
-        "component": "step_9",
+        "name": "step_4",
+        "component": "step_4_comp",
+        "next": "step_5"
+      },
+      {
+        "name": "step_5",
+        "component": "step_5_comp",
         "next": "end"
       }
     ]

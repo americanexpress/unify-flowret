@@ -51,12 +51,205 @@ public class Utils {
       if (s != null) {
         pi.getSetter().setPendExecPath(s);
       }
+
+      // set is complete
+      Boolean isComplete = d.getBoolean("$.process_info.is_complete");
+      if (isComplete != null) {
+        if (isComplete == true) {
+          pi.setCaseCompleted();
+        }
+      }
     }
 
     return pi;
   }
 
+  private static void setIsComplete(Document pid) {
+    Boolean isComplete = pid.getBoolean("$.process_info.is_complete");
+    boolean b = true;
+    if (isComplete == null) {
+      int size = pid.getArraySize("$.process_info.exec_paths[]");
+      for (int i = 0; i < size; i++) {
+        String status = pid.getString("$.process_info.exec_paths[%].status", i + "");
+        String wb = pid.getString("$.process_info.exec_paths[%].pend_workbasket", i + "");
+
+        if (status.equals("started")) {
+          b = false;
+          break;
+        }
+
+        if (wb.isEmpty() == false) {
+          b = false;
+          break;
+        }
+      }
+
+      isComplete = b;
+      pid.setBoolean("$.process_info.is_complete", isComplete);
+    }
+  }
+
+  private static String getShortestExecPath(Document pid) {
+    String sep = null;
+    int snum = 0;
+    int size = pid.getArraySize("$.process_info.exec_paths[]");
+    for (int i = 0; i < size; i++) {
+      String ep = pid.getString("$.process_info.exec_paths[%].name", i + "");
+      if (sep == null) {
+        sep = ep;
+        snum = BaseUtils.getCount(ep, '.');
+      }
+      else {
+        int num = BaseUtils.getCount(ep, '.');
+        if (num < snum) {
+          snum = num;
+          sep = ep;
+        }
+      }
+    }
+    return sep;
+  }
+
+  private static boolean checkAndSetTicketInExecPath(Document pid) {
+    boolean isTicketRaised = false;
+
+    String ticket = pid.getString("$.process_info.ticket");
+    if ((ticket != null) && (ticket.isEmpty() == false)) {
+      // a ticket was set and the step pended
+      String epName = pid.getString("$.process_info.pend_exec_path");
+      if (epName.isEmpty() == true) {
+        // arbitrarily select the shortest exec path just so that we can resume
+        epName = getShortestExecPath(pid);
+        pid.setString("$.process_info.pend_exec_path", epName);
+        pid.setString("$.process_info.exec_paths[name=%].pend_workbasket", "flowret_temp_hold");
+        pid.setString("$.process_info.exec_paths[name=%].unit_response_type", UnitResponseType.OK_PEND.toString().toLowerCase(), epName);
+      }
+
+      // set ticket as blank in all exec paths
+      int size = pid.getArraySize("$.process_info.exec_paths[]");
+      for (int i = 0; i < size; i++) {
+        pid.setString("$.process_info.exec_paths[%].ticket", "", i + "");
+      }
+
+      // set the ticket field in pended exec path
+      String s = pid.getString("$.process_info.exec_paths[name=%].name", epName);
+      if (s != null) {
+        pid.setString("$.process_info.exec_paths[name=%].ticket", ticket, epName);
+      }
+      isTicketRaised = true;
+    }
+    return isTicketRaised;
+  }
+
+  private static void checkExecPathCompletion(Document pid, String caseId, ProcessDefinition pd) {
+    int size = pid.getArraySize("$.process_info.exec_paths[]");
+    int oldLevel = 0;
+
+    for (int i = 0; i < size; i++) {
+      // get status
+      String epName = pid.getString("$.process_info.exec_paths[%].name", i + "");
+      ExecPathStatus epStatus = ExecPathStatus.valueOf(pid.getString("$.process_info.exec_paths[%].status", i + "").toUpperCase());
+
+      if (epStatus == ExecPathStatus.STARTED) {
+        // we have an exec path that could not go to completion. Set status and wb
+        pid.setString("$.process_info.exec_paths[%].status", ExecPathStatus.COMPLETED.toString().toLowerCase(), i + "");
+        String wb = pid.getString("$.process_info.exec_paths[%].pend_workbasket", i + "");
+        if (wb == null) {
+          pid.setString("$.process_info.exec_paths[%].pend_workbasket", "flowret_temp_hold", i + "");
+        }
+
+        String urt = pid.getString("$.process_info.exec_paths[%].unit_response_type", i + "");
+        if (urt == null) {
+          // urt is null and so we could not start on this unit. Set urt to ok_pend_eor so that we can execute again
+          pid.setString("$.process_info.exec_paths[%].unit_response_type", UnitResponseType.OK_PEND_EOR.toString().toLowerCase(), i + "");
+          logger.info("Case id -> {}, exec path -> {}, found urt as null, replacing with ok_pend_eor", caseId, epName);
+        }
+        else {
+          // urt has a value
+          Unit unit = pd.getUnit(pid.getString("$.process_info.exec_paths[%].step", i + ""));
+          if ((unit.getType() == UnitType.P_ROUTE) || (unit.getType() == UnitType.P_ROUTE_DYNAMIC)) {
+            // urt can be ok_proceed or error_pend. In case of error pend we can let it remain as it is and it will
+            // be picked up automatically
+            // in case of ok_proceed, we do nothing. This will not cover the scenario that the child processes all reached join and completed
+            // but before the parent thread could join on child threads the crash happened. Since practically
+            // it is not possible to take care of every situation, we will live with this risk hoping that one of the child
+            // process would not have completed in which case we should be OK
+          }
+          else if (unit.getType() == UnitType.S_ROUTE) {
+            // urt can be ok_proceed or error_pend. If ok_proceed we need to replace with ok_pend_eor
+            // as we need the rule to evaluate once again to decide where to go. For error pend we can
+            // leave it as it is
+            if (urt.equals(UnitResponseType.OK_PROCEED.toString().toLowerCase()) == true) {
+              pid.setString("$.process_info.exec_paths[%].unit_response_type", UnitResponseType.OK_PEND_EOR.toString().toLowerCase(), i + "");
+            }
+            else {
+              // nothing to do
+            }
+          }
+          else {
+            // we are at a step
+            // urt can be ok_proceed, ok_pend_eor, ok_pend or error_pend
+            // replace ok_proceed with ok_pend. Rest can ramin as they are
+            if (urt.equals(UnitResponseType.OK_PROCEED.toString().toLowerCase()) == true) {
+              pid.setString("$.process_info.exec_paths[%].unit_response_type", UnitResponseType.OK_PEND.toString().toLowerCase(), i + "");
+              logger.info("Case id -> {}, exec path -> {}, found step with urt as ok_proceed, replacing with ok_pend", caseId, epName);
+            }
+            else {
+              // nothing to do
+            }
+          }
+        }
+      }
+    }
+  }
+
+  private static void setPendExecPath(Document pid, String caseId) {
+    boolean isComplete = pid.getBoolean("$.process_info.is_complete");
+    if (isComplete == false) {
+      String pendExecPath = pid.getString("$.process_info.pend_exec_path");
+      if (pendExecPath == null) {
+        pendExecPath = "";
+      }
+
+      if (pendExecPath.isEmpty() == true) {
+        int size = pid.getArraySize("$.process_info.exec_paths[]");
+        int oldLevel = 0;
+        for (int i = 0; i < size; i++) {
+          // pend to the deepest exec path
+          String epName = pid.getString("$.process_info.exec_paths[%].name", i + "");
+          String wb = pid.getString("$.process_info.exec_paths[%].pend_workbasket", i + "");
+
+          if ((wb != null) && (wb.isEmpty() == false)) {
+            int newLevel = BaseUtils.getCount(epName, '.');
+            if (newLevel > oldLevel) {
+              pendExecPath = epName;
+              oldLevel = newLevel;
+            }
+          }
+        }
+
+        if (pendExecPath.isEmpty() == false) {
+          pid.setString("$.process_info.pend_exec_path", pendExecPath);
+        }
+        else {
+          logger.info("Case id -> {}, could not find a exec path to pend", caseId);
+          throw new UnifyException("flowret_err_12", caseId);
+        }
+      }
+    }
+  }
+
   private static void sanitize(Document pid, String caseId, ProcessDefinition pd) {
+    // check for existence of field is_complete
+    // if not there then we are dealing with a file created by the previous version of flowret
+    // in this case examine all exec paths and if all say completed without a pend
+    // then we assume case is complete
+
+    // also check for existence of field ticket in each exec path. If not found then we are
+    // dealing with an application created by a previous version of flowret
+    // we need to do this only if the ticket is set else the new version will self correct
+    // in this case select the pend exec path and set the ticket field there
+
     // this function will fix the data in the process info file to handle for possible orphaned applications
     // orphaned applications can result when the jvm crashes. In case of a jvm crash we will attempt to
     // recover from the last known state of the process. At worst, one step / route (per execution path) which could not log itself
@@ -69,86 +262,22 @@ public class Utils {
     // First identify if we are dealing with an orphaned case. The logic for doing this is to
     // traverse through all exec paths.
 
-    // If the status is started and urt is null, then it means that the execution path did not get a chance to start
+    // If the status is started then it means that the execution path did not get a chance to complete
 
-    // If there is any exec path which has status started and
-    // urt as ok proceed, it means that the execution path could not go through to completion.
-
-    // For all such execution paths, set the urt to ok pend. This will make the execution path execute from the next step
+    // For all such execution paths, set the status to complete
+    // Further for those which last executed a step, set the urt to ok pend and the workbasket. For others set it to ok proceed
+    // Lastly set the deepest level as pend exec path (only if ticket is not outstanding)
 
     // this logic should work for both single and multithreaded use cases
 
-    int size = pid.getArraySize("$.process_info.exec_paths[]");
-    int oldLevel = 0;
+    setIsComplete(pid);
 
-    for (int i = 0; i < size; i++) {
-      // get status
-      String epName = pid.getString("$.process_info.exec_paths[%].name", i + "");
-      String s = pid.getString("$.process_info.exec_paths[%].status", i + "");
-      ExecPathStatus epStatus = ExecPathStatus.valueOf(s.toUpperCase());
-
-      // get urt
-      s = pid.getString("$.process_info.exec_paths[%].unit_response_type", i + "");
-      if (s == null) {
-        s = UnitResponseType.OK_PEND_EOR.toString().toLowerCase();
-        pid.setString("$.process_info.exec_paths[%].unit_response_type", s, i + "");
-        logger.info("Case id -> {}, exec path -> {}, found urt as null, replacing with ok_pend_eor", caseId, epName);
-      }
-
-      UnitResponseType urt = UnitResponseType.valueOf(s.toUpperCase());
-
-      if ((epStatus == ExecPathStatus.STARTED) && (urt == UnitResponseType.OK_PROCEED)) {
-        s = pid.getString("$.process_info.exec_paths[%].step", i + "");
-        Unit unit = pd.getUnit(s);
-
-        if ((unit.getType() == UnitType.P_ROUTE) || (unit.getType() == UnitType.P_ROUTE_DYNAMIC)) {
-          // TODO check and correct if required
-          pid.setString("$.process_info.exec_paths[%].status", ExecPathStatus.COMPLETED.toString().toLowerCase(), i + "");
-          logger.info("Case id -> {}, exec path -> {}, found parallel route with urt as ok_proceed, setting it to completed", caseId, epName);
-        }
-        else {
-          if (unit.getType() == UnitType.S_ROUTE) {
-            pid.setString("$.process_info.exec_paths[%].unit_response_type", UnitResponseType.OK_PEND_EOR.toString().toLowerCase(), i + "");
-            logger.info("Case id -> {}, exec path -> {}, found s_route with urt as ok_proceed, replacing with ok_pend_eor", caseId, epName);
-          }
-          else {
-            pid.setString("$.process_info.exec_paths[%].unit_response_type", UnitResponseType.OK_PEND.toString().toLowerCase(), i + "");
-            logger.info("Case id -> {}, exec path -> {}, found step with urt as ok_proceed, replacing with ok_pend", caseId, epName);
-          }
-        }
-      }
+    boolean isTicket = checkAndSetTicketInExecPath(pid);
+    if (isTicket == false) {
+      checkExecPathCompletion(pid, caseId, pd);
     }
 
-    // set pend path
-    String pendExecPath = pid.getString("$.process_info.pend_exec_path");
-    if (pendExecPath == null) {
-      pendExecPath = "";
-    }
-
-    if (pendExecPath.isEmpty() == true) {
-      for (int i = 0; i < size; i++) {
-        // pend to the deepest exec path
-        String epName = pid.getString("$.process_info.exec_paths[%].name", i + "");
-
-        String s = pid.getString("$.process_info.exec_paths[%].status", i + "");
-        ExecPathStatus epStatus = ExecPathStatus.valueOf(s.toUpperCase());
-
-        s = pid.getString("$.process_info.exec_paths[%].unit_response_type", i + "");
-        UnitResponseType urt = UnitResponseType.valueOf(s.toUpperCase());
-
-        if ((epStatus == ExecPathStatus.STARTED) && (urt != UnitResponseType.OK_PROCEED)) {
-          int newLevel = BaseUtils.getCount(epName, '.');
-          if (newLevel > oldLevel) {
-            pendExecPath = epName;
-            oldLevel = newLevel;
-          }
-        }
-      }
-
-      if (pendExecPath.isEmpty() == false) {
-        pid.setString("$.process_info.pend_exec_path", pendExecPath);
-      }
-    }
+    setPendExecPath(pid, caseId);
   }
 
   private static List<ProcessVariable> getProcessVariablesFromProcessInfo(Document d) {
@@ -256,7 +385,7 @@ public class Utils {
       }
 
       ExecPath ep = new ExecPath(name);
-      ep.set(ExecPathStatus.valueOf(status.toUpperCase()), step, step, urt);
+      ep.set(ExecPathStatus.valueOf(status.toUpperCase()), step, urt);
       ep.setPendWorkBasket(pendWorkBasket);
       ep.setPendErrorTuple(et);
       ep.setPrevPendWorkBasket(prevPendWorkBasket);
@@ -438,7 +567,8 @@ public class Utils {
     slaQm.dequeue(pc, wb);
   }
 
-  protected static void enqueueWorkBasketMilestones(ProcessContext pc, SlaMilestoneSetupOn setupOn, String wb, Document slad, ISlaQueueManager slaQm) {
+  protected static void enqueueWorkBasketMilestones(ProcessContext pc, SlaMilestoneSetupOn setupOn, String
+          wb, Document slad, ISlaQueueManager slaQm) {
     Document d = slad;
     Document md = new JDocument();
     int j = 0;
@@ -461,7 +591,8 @@ public class Utils {
     }
   }
 
-  protected static void writeAuditLog(FlowretDao dao, ProcessInfo pi, Unit lastUnit, List<String> branches, String compName) {
+  protected static void writeAuditLog(FlowretDao dao, ProcessInfo pi, Unit lastUnit, List<String> branches, String
+          compName) {
     // write the process info as audit log
     long seq = dao.incrCounter("flowret_audit_log_counter-" + pi.getCaseId());
     String s = String.format("%05d", seq);

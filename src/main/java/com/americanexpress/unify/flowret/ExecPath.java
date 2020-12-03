@@ -24,24 +24,16 @@ public class ExecPath {
 
   private String name = ".";
 
-  // this contains the status of the execution path
-  // this status will set to completed when
-  // a) the process ends
-  // b) when the execution path successfully reaches a join
-  // c) when a parent execution path waiting at a parallel route successfully joins on the child Java threads
-  //    this means that if a parent thread started three child threads, two of them went on to the join condition
-  //    but the third pended somewhere, the parent execution path will still be marked complete
-  // Reason is that when any child thread pends, the application pends and when it is resumed
-  // we start with a single thread which first executes in the context of the pended child execution path
-  // and then upon reaching the join assumes the role of the parent execution path. When it assumes the role
-  // of the parent, the status of the parent execution path (which was marked completed previously)
-  // is set to started to proceed further in the process
-
+  // the status is started if the thread corresponding to this exec path is running
+  // if the thread terminates then the status will be marked as complete
   private ExecPathStatus status = ExecPathStatus.STARTED;
 
   // this contains the start step when we start / resume the process
   // during the process this contains the last executed step
   private String step = "";
+
+  // this contains the name of the ticket raised by this execpath
+  private String ticket = "";
 
   // this contains the name of the workbasket in case a pend has occurred
   private String pendWorkBasket = "";
@@ -62,14 +54,27 @@ public class ExecPath {
     this.name = name;
   }
 
-  protected void set(ExecPathStatus status, String step, String pendStep, UnitResponseType unitResponseType) {
+  protected void set(ExecPathStatus status, String step, UnitResponseType unitResponseType) {
     this.status = status;
+    this.step = step;
+    this.unitResponseType = unitResponseType;
+  }
+
+  protected void set(String step, UnitResponseType unitResponseType) {
     this.step = step;
     this.unitResponseType = unitResponseType;
   }
 
   public String getPrevPendWorkBasket() {
     return prevPendWorkBasket;
+  }
+
+  protected void setTicket(String ticket) {
+    this.ticket = ticket;
+  }
+
+  protected String getTicket() {
+    return ticket;
   }
 
   protected String getTbcSlaWorkBasket() {
@@ -109,8 +114,18 @@ public class ExecPath {
   }
 
   protected String getParentExecPathName() {
-    int index = BaseUtils.getIndexOfChar(name, '.', 3, false);
-    return name.substring(0, index + 1);
+    String ppn = ".";
+
+    // get number of dots in the execpath
+    int num = BaseUtils.getCount(name, '.');
+
+    int num1 = num - 2;
+    if (num1 > 0) {
+      int index = BaseUtils.getIndexOfChar(name, '.', num1, true);
+      ppn = name.substring(0, index + 1);
+    }
+
+    return ppn;
   }
 
   protected UnitResponseType getUnitResponseType() {

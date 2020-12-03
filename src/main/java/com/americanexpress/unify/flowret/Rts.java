@@ -132,6 +132,7 @@ public final class Rts {
       }
       catch (Exception e) {
         bContinue = false;
+        pc = null;
         logger.info("Case id -> " + pi.getCaseId() + ", aborting as application exception encountered while raising event");
         logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
         logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
@@ -179,6 +180,7 @@ public final class Rts {
     }
     catch (Exception e) {
       bContinue = false;
+      pc = null;
       logger.info("Case id -> " + pi.getCaseId() + ", aborting as application exception encountered while raising event");
       logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
       logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());

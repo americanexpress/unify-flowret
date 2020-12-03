@@ -12,23 +12,25 @@
  * the License.
  */
 
-package com.americanexpress.unify.flowret;
+package com.americanexpress.unify.flowret.test_parallel;
 
-import com.americanexpress.unify.jdocs.BaseUtils;
+import com.americanexpress.unify.flowret.InvokableRoute;
+import com.americanexpress.unify.flowret.ProcessContext;
+import com.americanexpress.unify.flowret.RouteResponse;
+import com.americanexpress.unify.flowret.UnitResponseType;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 /*
  * @author Deepak Arora
  */
-public class TestRule implements InvokableRoute {
+public class TestRuleParallel implements InvokableRoute {
 
   private String name = null;
   private ProcessContext pc = null;
 
-  public TestRule(ProcessContext pc) {
+  public TestRuleParallel(ProcessContext pc) {
     this.name = pc.getCompName();
     this.pc = pc;
   }
@@ -40,35 +42,13 @@ public class TestRule implements InvokableRoute {
   public RouteResponse executeRoute() {
     List<String> branches = new ArrayList<>();
     RouteResponse resp = null;
-    String name = pc.getCompName();
+    String stepName = pc.getStepName();
 
-    while (true) {
-      Random random = new Random();
-
-      while (true) {
-        if (BaseUtils.compareWithMany(name, "rcomp4", "rcomp2", "rcomp5")) {
-          branches.add("yes");
-          resp = new RouteResponse(UnitResponseType.OK_PROCEED, branches, null);
-          break;
-        }
-
-        // for parallel processing use case only
-        if (name.equalsIgnoreCase("route_1")) {
-          branches.add("1");
-          branches.add("2");
-          branches.add("3");
-          resp = new RouteResponse(UnitResponseType.OK_PROCEED, branches, null);
-          break;
-        }
-
-        {
-          branches.add("no");
-          resp = new RouteResponse(UnitResponseType.OK_PROCEED, branches, null);
-          break;
-        }
-      }
-
-      break;
+    if (stepName.equalsIgnoreCase("route_1")) {
+      branches.add("1");
+      branches.add("2");
+      branches.add("3");
+      resp = new RouteResponse(UnitResponseType.OK_PROCEED, branches, null);
     }
 
     return resp;

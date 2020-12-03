@@ -114,9 +114,9 @@ public class ExecThreadTask implements Runnable {
                         pc = ProcessContext.forEvent(EventType.ON_TICKET_RAISED, rts, execPath.getName());
                         rts.invokeEventHandler(EventType.ON_TICKET_RAISED, pc);
 
-                        execPath.set(ExecPathStatus.COMPLETED, unit.getName(), "", UnitResponseType.OK_PROCEED);
+                        execPath.set(ExecPathStatus.COMPLETED, unit.getName(), UnitResponseType.OK_PROCEED);
                         ExecPath ep = new ExecPath(".");
-                        ep.set(ExecPathStatus.STARTED, ticket.getStep(), "", UnitResponseType.OK_PROCEED);
+                        ep.set(ticket.getStep(), UnitResponseType.OK_PROCEED);
                         execPath = ep;
                         pi.setExecPath(ep);
                         next = ticket.getStep();
@@ -125,18 +125,25 @@ public class ExecThreadTask implements Runnable {
                     }
                     else {
                       // the ticket is asking us to pend
-                      // in this case we first clear out all exec paths
-                      // then we write only one exec path which is root i.e. "."
-                      // we do this as a ticket pend override all other pends which may have happened in other
-                      // parallel paths
-                      pi.clearExecPaths();
-
-                      // assign just one exec path to start with
+                      ExecPath tep = getTicketRaisingExecPath();
                       ExecPath ep = new ExecPath(".");
-                      ep.set(ExecPathStatus.STARTED, ticket.getStep(), "", null);
+                      ep.setPendWorkBasket(tep.getPendWorkBasket());
+                      ep.setPrevPendWorkBasket(tep.getPrevPendWorkBasket());
+                      ep.setTbcSlaWorkBasket(tep.getTbcSlaWorkBasket());
+                      ep.set(ExecPathStatus.COMPLETED, tep.getStep(), pi.getTicketUrt());
+
+                      pi.clearPendWorkBaskets();
                       pi.setExecPath(ep);
+                      pi.getSetter().setPendExecPath(".");
+                      execPath = ep;
                     }
-                    break;
+
+                    if (next == null) {
+                      break outer;
+                    }
+                    else {
+                      break;
+                    }
                   }
                 }
                 break outer;
@@ -185,11 +192,12 @@ public class ExecThreadTask implements Runnable {
         writeProcessInfoAndAuditLog(pi, unit);
       }
       else {
-        execPath.set(ExecPathStatus.COMPLETED, execPath.getStep(), "", UnitResponseType.OK_PROCEED);
+        execPath.set(ExecPathStatus.COMPLETED, execPath.getStep(), UnitResponseType.OK_PROCEED);
 
         try {
           pi.getLock().lock();
           pi.getSetter().setPendExecPath("");
+          pi.setCaseCompleted();
         }
         finally {
           pi.getLock().unlock();
@@ -229,6 +237,19 @@ public class ExecThreadTask implements Runnable {
     return pc;
   }
 
+  private ExecPath getTicketRaisingExecPath() {
+    List<ExecPath> paths = pi.getExecPaths();
+    ExecPath ep = null;
+    for (ExecPath path : paths) {
+      String ticket = path.getTicket();
+      if (ticket.isEmpty() == false) {
+        ep = path;
+        break;
+      }
+    }
+    return ep;
+  }
+
   // return true if we need to proceed with running the process else false
   private boolean onStart() {
     boolean start = true;
@@ -263,7 +284,7 @@ public class ExecThreadTask implements Runnable {
       // check if we have never ever started
       if (pi.isCaseStarted() == false) {
         ep = new ExecPath(".");
-        ep.set(ExecPathStatus.STARTED, "start", "", null);
+        ep.set(ExecPathStatus.STARTED, "start", null);
         pi.setExecPath(ep);
         break;
       }
@@ -279,7 +300,7 @@ public class ExecThreadTask implements Runnable {
 
           // assign just one exec path to start with
           ep = new ExecPath(".");
-          ep.set(ExecPathStatus.STARTED, ticket.getStep(), "", null);
+          ep.set(ExecPathStatus.STARTED, ticket.getStep(), null);
           pi.setExecPath(ep);
           break;
         }
@@ -292,7 +313,7 @@ public class ExecThreadTask implements Runnable {
         Unit c = pd.getUnit(ep.getStep());
         if (c.getType() == UnitType.PAUSE) {
           Pause p = (Pause)c;
-          ep.set(ExecPathStatus.STARTED, p.getNext(), "", null);
+          ep.set(ExecPathStatus.STARTED, p.getNext(), null);
           break;
         }
       }
@@ -305,13 +326,15 @@ public class ExecThreadTask implements Runnable {
           case OK_PEND: {
             // we are at a step and we need to start from the next step
             Step pendStep = (Step)pd.getUnit(ep.getStep());
-            ep.set(ExecPathStatus.STARTED, pendStep.getNext(), "", null);
+            ep.set(ExecPathStatus.STARTED, pendStep.getNext(), null);
+            ep.setPendWorkBasket("");
             break;
           }
 
           case OK_PEND_EOR: {
-            // we may be at a step or a route TODO check for parallel route logic
-            ep.set(ExecPathStatus.STARTED, ep.getStep(), "", null);
+            // we may be at a step or a route
+            ep.set(ExecPathStatus.STARTED, ep.getStep(), null);
+            ep.setPendWorkBasket("");
             break;
           }
 
@@ -323,7 +346,8 @@ public class ExecThreadTask implements Runnable {
 
           case ERROR_PEND: {
             // we are pended on a step or route after an error and so we need to start from there
-            ep.set(ExecPathStatus.STARTED, ep.getStep(), "", null);
+            ep.set(ExecPathStatus.STARTED, ep.getStep(), null);
+            ep.setPendWorkBasket("");
             break;
           }
         }
@@ -355,7 +379,7 @@ public class ExecThreadTask implements Runnable {
         case OK_PEND_EOR: {
           logger.info("Case id -> " + pi.getCaseId() + ", pending at step -> " + step.getName() + ", component -> " + step.getComponentName() + ", execution path -> " + execPath.getName());
 
-          execPath.set(ExecPathStatus.STARTED, step.getName(), step.getName(), urt);
+          execPath.set(ExecPathStatus.COMPLETED, step.getName(), urt);
           execPath.setPendWorkBasket(resp.getWorkBasket());
 
           // we first check if there is already a ticket set
@@ -370,7 +394,8 @@ public class ExecThreadTask implements Runnable {
           if (ticketName.isEmpty() == false) {
             // in this case set the ticket and pend exec path
             logger.info("Case id -> " + pi.getCaseId() + ", encountered ticket -> " + ticketName + ", component -> " + step.getComponentName() + ", execution path -> " + execPath.getName());
-            pi.getSetter().setTicketUrt(UnitResponseType.OK_PROCEED).setPendExecPath(execPath.getName()).setTicket(resp.getTicket());
+            execPath.setTicket(ticketName);
+            pi.getSetter().setTicketUrt(urt).setPendExecPath(execPath.getName()).setTicket(ticketName);
             break;
           }
 
@@ -381,13 +406,13 @@ public class ExecThreadTask implements Runnable {
         }
 
         case OK_PROCEED: {
-          execPath.set(ExecPathStatus.STARTED, step.getName(), "", urt);
+          execPath.set(step.getName(), urt);
 
           // again we first check if there is already a ticket set
           if (pi.getTicket().isEmpty() == false) {
             // we only need to update the process variables and terminate
             logger.info("Case id -> " + pi.getCaseId() + ", abandoning as ticket is already set -> " + pi.getTicket() + ", component -> " + step.getComponentName() + ", execution path -> " + execPath.getName());
-            execPath.set(ExecPathStatus.COMPLETED, step.getName(), "", urt);
+            execPath.set(ExecPathStatus.COMPLETED, step.getName(), urt);
             break;
           }
 
@@ -411,11 +436,11 @@ public class ExecThreadTask implements Runnable {
               else {
                 // mark current execution path as completed
                 // become the "." execution path and continue
-                logger.info("Case id -> " + pi.getCaseId() + ", child thread going to assume parent role, execution path -> " + execPath.getName());
+                logger.info("Case id -> " + pi.getCaseId() + ", child thread going to assume parent role (\".\"), execution path -> " + execPath.getName());
 
-                execPath.set(ExecPathStatus.COMPLETED, step.getName(), "", urt);
+                execPath.set(ExecPathStatus.COMPLETED, step.getName(), urt);
                 ExecPath ep = new ExecPath(".");
-                ep.set(ExecPathStatus.STARTED, step.getName(), "", urt);
+                ep.set(ExecPathStatus.STARTED, step.getName(), urt);
                 execPath = ep;
                 pi.setExecPath(ep);
                 Ticket ticket = pd.getTicket(ticketName);
@@ -427,8 +452,9 @@ public class ExecThreadTask implements Runnable {
               // we are a child thread and our parent is running and so we need to set ticket and terminate
               // and let the parent handle the ticket
               logger.info("Case id -> " + pi.getCaseId() + ", child thread exiting, execution path -> " + execPath.getName());
-              execPath.set(ExecPathStatus.COMPLETED, step.getName(), "", urt);
-              pi.getSetter().setTicket(resp.getTicket());
+              execPath.set(ExecPathStatus.COMPLETED, step.getName(), urt);
+              execPath.setTicket(ticketName);
+              pi.getSetter().setTicket(ticketName);
             }
           }
           else {
@@ -441,7 +467,7 @@ public class ExecThreadTask implements Runnable {
 
         case ERROR_PEND: {
           logger.info("Case id -> " + pi.getCaseId() + ", pending at step -> " + step.getName() + ", component -> " + step.getComponentName() + ", execution path -> " + execPath.getName());
-          execPath.set(ExecPathStatus.STARTED, step.getName(), step.getName(), urt);
+          execPath.set(ExecPathStatus.COMPLETED, step.getName(), urt);
           execPath.setPendWorkBasket(resp.getWorkBasket());
           execPath.setPendErrorTuple(resp.getErrorTuple());
           pi.getSetter().setPendExecPath(execPath.getName());
@@ -462,13 +488,13 @@ public class ExecThreadTask implements Runnable {
       logger.info("Case id -> " + pi.getCaseId() + ", executing persist step -> " + step.getName() + ", execution path -> " + execPath.getName());
       pi.isPendAtSameStep = false;
       rts.invokeEventHandler(EventType.ON_PERSIST, ProcessContext.forEvent(EventType.ON_PERSIST, rts, execPath.getName()));
-      execPath.set(ExecPathStatus.STARTED, step.getName(), "", UnitResponseType.OK_PROCEED);
+      execPath.set(step.getName(), UnitResponseType.OK_PROCEED);
       next = step.getNext();
       return next;
     }
     catch (Exception e) {
       logger.info("Case id -> " + pi.getCaseId() + ", pending at persist step -> " + step.getName() + ", execution path -> " + execPath.getName());
-      execPath.set(ExecPathStatus.STARTED, step.getName(), step.getName(), UnitResponseType.ERROR_PEND);
+      execPath.set(step.getName(), UnitResponseType.ERROR_PEND);
       execPath.setPendWorkBasket("flowret_error");
       return null;
     }
@@ -480,10 +506,10 @@ public class ExecThreadTask implements Runnable {
       String execPathName = execPath.getName() + route.getName() + "." + branchName + ".";
       ExecPath ep = new ExecPath(execPathName);
       if (route.getNext() != null) {
-        ep.set(ExecPathStatus.STARTED, route.getNext(), "", null);
+        ep.set(route.getNext(), null);
       }
       else {
-        ep.set(ExecPathStatus.STARTED, route.getBranch(branchName).getNext(), "", null);
+        ep.set(route.getBranch(branchName).getNext(), null);
       }
       pi.setExecPath(ep);
     }
@@ -498,15 +524,12 @@ public class ExecThreadTask implements Runnable {
 
     UnitResponseType urt = resp.getUnitResponseType();
 
-    if ((urt == UnitResponseType.OK_PROCEED) || (urt == UnitResponseType.OK_PEND)) {
-      pi.isPendAtSameStep = false;
-    }
-
     if (urt == UnitResponseType.OK_PROCEED) {
-      execPath.set(ExecPathStatus.STARTED, route.getName(), "", urt);
+      pi.isPendAtSameStep = false;
+      execPath.set(route.getName(), urt);
     }
     else {
-      execPath.set(ExecPathStatus.STARTED, route.getName(), route.getName(), urt);
+      execPath.set(route.getName(), urt);
       execPath.setPendWorkBasket(resp.getWorkBasket());
       execPath.setPendErrorTuple(resp.getErrorTuple());
     }
@@ -527,7 +550,7 @@ public class ExecThreadTask implements Runnable {
       case OK_PEND:
       case OK_PEND_EOR: {
         // this situation will not arise as a route cannot specify a pend upon successful execution
-        throw new UnifyException("anexdeus_err_8");
+        throw new UnifyException("flowret_err_8");
       }
 
       case OK_PROCEED: {
@@ -547,10 +570,10 @@ public class ExecThreadTask implements Runnable {
                   pi.getLock().lock();
 
                   // mark current execution path as completed
-                  // become the "." execution path and continue
-                  execPath.set(ExecPathStatus.COMPLETED, route.getName(), "", urt);
-                  ExecPath ep = new ExecPath(".");
-                  ep.set(ExecPathStatus.STARTED, route.getName(), "", urt);
+                  // become the parent execution path and continue
+                  execPath.set(ExecPathStatus.COMPLETED, route.getName(), urt);
+                  ExecPath ep = new ExecPath(execPath.getParentExecPathName());
+                  ep.set(route.getName(), urt);
                   execPath = ep;
                   pi.setExecPath(ep);
                   Ticket ticket = pd.getTicket(pi.getTicket());
@@ -564,7 +587,7 @@ public class ExecThreadTask implements Runnable {
             }
             else {
               // mark myself completed and let the parent handle ticket
-              execPath.set(ExecPathStatus.COMPLETED, route.getName(), "", urt);
+              execPath.set(ExecPathStatus.COMPLETED, route.getName(), urt);
             }
           }
           else {
@@ -577,11 +600,7 @@ public class ExecThreadTask implements Runnable {
 
         // we reach here because we are the main thread and some child thread has pended
         // in this case we are going to terminate and so set ourselves as completed
-        // point to note -> a thread will be marked as started in the process info file if it has
-        // pended on a step. A thread waiting on a parallel route for child threads to complete
-        // is not considered a pend condition. This thread waiting on child threads to complete will
-        // either proceed ahead or terminate as completed in case any of the child threads pend
-        execPath.set(ExecPathStatus.COMPLETED, route.getName(), "", urt);
+        execPath.set(ExecPathStatus.COMPLETED, route.getName(), urt);
         break;
       }
 
@@ -629,7 +648,7 @@ public class ExecThreadTask implements Runnable {
         }
 
         case OK_PROCEED: {
-          execPath.set(ExecPathStatus.STARTED, route.getName(), "", urt);
+          execPath.set(route.getName(), urt);
           String branchName = resp.getBranches().get(0);
           next = route.getBranch(branchName).getNext();
           break;
@@ -637,7 +656,7 @@ public class ExecThreadTask implements Runnable {
 
         case ERROR_PEND: {
           logger.info("Case id -> " + pi.getCaseId() + ", pending at route -> " + route.getName() + ", component -> " + route.getComponentName() + ", execution path -> " + execPath.getName());
-          execPath.set(ExecPathStatus.STARTED, route.getName(), route.getName(), urt);
+          execPath.set(route.getName(), urt);
           execPath.setPendWorkBasket(resp.getWorkBasket());
           execPath.setPendErrorTuple(resp.getErrorTuple());
           pi.getSetter().setPendExecPath(execPath.getName());
@@ -656,8 +675,7 @@ public class ExecThreadTask implements Runnable {
     logger.info("Case id -> " + pi.getCaseId() + ", executing pause step -> " + pause.getName() + ", execution path -> " + execPath.getName());
     try {
       pi.getLock().lock();
-
-      execPath.set(ExecPathStatus.STARTED, pause.getName(), pause.getName(), UnitResponseType.OK_PEND);
+      execPath.set(pause.getName(), UnitResponseType.OK_PEND);
       execPath.setPendWorkBasket("flowret_pause");
       pi.getSetter().setPendExecPath(execPath.getName());
     }
@@ -675,7 +693,7 @@ public class ExecThreadTask implements Runnable {
       pi.getLock().lock();
 
       // mark myself as complete first. This will reflect in pi
-      execPath.set(ExecPathStatus.COMPLETED, join.getName(), "", UnitResponseType.OK_PROCEED);
+      execPath.set(ExecPathStatus.COMPLETED, join.getName(), UnitResponseType.OK_PROCEED);
 
       // check if all siblings have completed
       // this is used for correctly unravelling the pended process. The other approach
@@ -691,24 +709,19 @@ public class ExecThreadTask implements Runnable {
         }
 
         if (execPath.isSibling(path)) {
-          if (path.getStatus() != ExecPathStatus.COMPLETED) {
+          if (path.getPendWorkBasket().isEmpty() == false) {
             isComplete = false;
-
-            // here we need to set the pended ep only if we find that the ep has indeed pended
-            // we cannot assume that just because the sibling has not completed that it has pended
-            if (path.getPendWorkBasket().isEmpty() == false) {
-              pendedEp = path;
-              break;
-            }
+            pendedEp = path;
+            break;
+          }
           }
         }
-      }
 
       if (isComplete == true) {
         // we need to become parent and continue processing
         ExecPath parentEp = pi.getExecPath(execPath.getParentExecPathName());
         if (parentEp.getStatus() == ExecPathStatus.COMPLETED) {
-          parentEp.set(ExecPathStatus.STARTED, join.getName(), "", UnitResponseType.OK_PROCEED);
+          parentEp.set(ExecPathStatus.STARTED, join.getName(), UnitResponseType.OK_PROCEED);
           execPath = parentEp;
           next = join.getNext();
         }
@@ -778,8 +791,10 @@ public class ExecThreadTask implements Runnable {
       ExecThreadTask in = tasks[i];
       ExecPath ep = in.execPath;
       joinPoint = ep.getStep();
-      if (ep.getStatus() != ExecPathStatus.COMPLETED) {
+
+      if (ep.getPendWorkBasket().isEmpty() == false) {
         isPend = true;
+        break;
       }
     }
 
@@ -793,14 +808,17 @@ public class ExecThreadTask implements Runnable {
 
   private RouteResponse executeRule(Route route) {
     RouteResponse rr = null;
+    ProcessContext pc = null;
 
     try {
       ProcessComponentFactory factory = rts.factory;
-      ProcessContext pc = new ProcessContext(pd.getName(), pi.getCaseId(), route.getName(), route.getComponentName(), route.getUserData(), route.getType(), pi.getProcessVariables(), execPath.getName());
+      pc = new ProcessContext(pd.getName(), pi.getCaseId(), route.getName(), route.getComponentName(), route.getUserData(), route.getType(), pi.getProcessVariables(), execPath.getName());
       InvokableRoute rule = (InvokableRoute)factory.getObject(pc);
       rr = rule.executeRoute();
     }
     catch (Exception e) {
+      logger.error("Exception encountered while executing rule. Case id -> {}, step_name -> {}, comp_name -> {}", pi.getCaseId(), pc.getStepName(), pc.getCompName());
+      logger.error("Exception details -> {}", e.getMessage());
       rr = new RouteResponse(UnitResponseType.ERROR_PEND, null, "flowret_error");
     }
 
@@ -809,13 +827,17 @@ public class ExecThreadTask implements Runnable {
 
   private StepResponse executeStep(Step step) {
     StepResponse sr = null;
+    ProcessContext pc = null;
+
     try {
       ProcessComponentFactory factory = rts.factory;
-      ProcessContext pc = new ProcessContext(pd.getName(), pi.getCaseId(), step.getName(), step.getComponentName(), step.getUserData(), UnitType.STEP, pi.getProcessVariables(), execPath.getName());
+      pc = new ProcessContext(pd.getName(), pi.getCaseId(), step.getName(), step.getComponentName(), step.getUserData(), UnitType.STEP, pi.getProcessVariables(), execPath.getName());
       InvokableStep iStep = (InvokableStep)factory.getObject(pc);
       sr = iStep.executeStep();
     }
     catch (Exception e) {
+      logger.error("Exception encountered while executing step. Case id -> {}, step_name -> {}, comp_name -> {}", pi.getCaseId(), pc.getStepName(), pc.getCompName());
+      logger.error("Exception details -> {}", e.getMessage());
       sr = new StepResponse(UnitResponseType.ERROR_PEND, null, "flowret_error");
     }
 

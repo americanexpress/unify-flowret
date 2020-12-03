@@ -2,8 +2,8 @@
   "id": "{\"type\":\"string\"}",
   "type": "{\"type\":\"string\"}",
   "process_info": {
-    "step": "{\"type\":\"string\"}",
-    "component": "{\"type\":\"string\"}",
+    "last_executed_step": "{\"type\":\"string\"}",
+    "last_executed_component": "{\"type\":\"string\"}",
     "pend_exec_path": "{\"type\":\"string\"}",
     "ts": "{\"type\":\"long\"}",
     "is_complete": "{\"type\":\"boolean\"}",
@@ -26,7 +26,8 @@
         "pend_workbasket": "{\"type\":\"string\"}",
         "prev_pend_workbasket": "{\"type\":\"string\"}",
         "tbc_sla_workbasket": "{\"type\":\"string\"}",
-        "unit_response_type": "{\"type\":\"string\"}"
+        "unit_response_type": "{\"type\":\"string\"}",
+        "ticket": "{\"type\":\"string\"}"
       }
     ]
   }
