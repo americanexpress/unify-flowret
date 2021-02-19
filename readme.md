@@ -665,6 +665,8 @@ The process context variables will be set as below while invoking events. Other 
     * caseId
     * processVariables
     * execPathName - this will be set to "." denoting the starting root execution path
+    * stepName - where process had pended
+    * compName - the name of the component corresponding to the step
     
 * ON_PROCESS_COMPLETE
     * journeyName
@@ -1148,7 +1150,7 @@ An SLA milestone is defined using the following fields:
 1. Setup on - case start or work basket entry or work basket exit
 1. Type - milestone exists at case level or at work basket level
 1. Workbasket name - specifies the work basket name and is only applicable if setup on is work basket entry or exit 
-1. Applied at - duration of time after which the milestone is to fire
+1. Applied at - duration of time after which the first milestone is to fire
 1. Clock starts at - immediately or deferred to the start of the next day - used to compute the time when the milestone should fire
 1. User action - application defined string. Flowret does not interpret this
 but only passes it to the application
@@ -1188,6 +1190,44 @@ Below is an example of SLA milestone definition in a JSON file:
       "clock_starts": "immediately",
       "action": "some_user_action",
       "user_data": "some user data"
+    },
+    {
+      // this is the new way a block can be specified. Note that it only has
+      // an additional block "further_milestones"
+      // instead of creating multiple entries for a single milestone,
+      // they can be defined inside of a single milestone entry
+      // this is backward compatible meaning that the existing clients and existing SLA will
+      // continue to work. However if the existing SLA is updated to new structure
+      // then the corresponding clients will also need to change to take into account the
+      // handling of the "further_milestones" block
+      "name": "some_milestone",
+      "setup_on": "work_basket_entry",
+      "type": "case_level",
+      "work_basket_name": "some_wb",
+      "applied_at_age": "30m",
+      "clock_starts": "immediately",
+      "action": "CORR",
+      "userdata": "",
+      // optional block
+      "further_milestones": [
+        {
+          "applied_at_age": "60m",
+          // first occurrence -> t0 + 60m
+          // second occurrence -> t0 + 120m
+          // third occurrence -> t0 + 180m
+          // repeat block is also optional in which case the default value is 1
+          "repeat": 3
+        },
+        {
+          // t0 + 240m
+          "applied_at_age": "240m"
+        },
+        {
+          // etc.
+          "applied_at_age": "540m",
+          "repeat": 3
+        }
+      ]
     }
   ]
 }
@@ -1203,7 +1243,7 @@ Each element of the array is further described below:
 1. `type` - possible values can be `case_level` or `work_basket`
 1. `work_basket_name` - if the value of `setup_on` is `work_basket_entry` or `work_basket_exit`, then this value
 specifies the work basket name on which the milestone is defined
-1. `applied_at_age` - specifies the duration of time. Can be specified as a number followed by a d (days) or m (minutes).
+1. `applied_at_age` - specifies the duration of time after which the first milestone should fire. Can be specified as a number followed by a d (days) or m (minutes).
 30d means 30 days and 20m means 20 minutes
 1. `clock_starts` - specifies from when is the `applied_at_age` value computes. Values can be `immediate`
 or `next_day`. Immediately means that the time specified in applied at age should be computed immediately
@@ -1215,6 +1255,21 @@ on different time zones
 is to be setup. Flowret does not interpret this field in any way 
 1. `user_data` - this is another user defined field which Flowret will pass to the application when the milestone
 is to be setup. Flowret does not interpret this field in any way 
+
+**The "further_milestones" block**
+
+This block is optional. In case the milestone definition requires only one trigger then the same can be specified in the main block.
+However, sometimes there is a requirement that there be multiple triggers for a milestone. For example, on an application getting
+pended in a certain workbasket, send three reminders to the customer. The first reminder can be specified as part of the main block whereas
+the remaining two can be specified as part of the "further_milestones" block as described below. Note that all
+trigger times are relative to "t0" where "t0" is the time when the first milestone was setup as governed by
+"clock_starts" field.
+ 
+1. `applied_at_age` - specifies the duration of time after this milestone should fire. Can be specified as a number followed by a d (days) or m (minutes).
+30d means 30 days and 20m means 20 minutes
+1. `repeat` - an integer value that specifies the number of occurrences of the trigger. Each occurrence will be that much further
+in time as the counter. The example JSON above describes this more clearly. This fields is also optional. If not specified
+the default assumed should be 1.  
 
 #### Starting a case with SLA milestones
 
