@@ -76,7 +76,7 @@ public final class Wms {
         if (currWb.equals(newWb) == false) {
           if (currWb.equals(tbcSlaWb) == false) {
             if (slaQm != null) {
-              Utils.dequeueWorkBasketMilestones(pc, currWb, slaQm);
+              Utils.dequeueWorkBasketMilestones(pc, currWb, slad, slaQm);
             }
           }
 

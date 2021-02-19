@@ -33,7 +33,12 @@ public class TestStep implements InvokableStep {
 
   public StepResponse executeStep() {
     String stepName = pc.getStepName();
-    return StepResponseFactory.getResponse(stepName);
+    if (stepName.equals("step13")) {
+      // only there to set a break point
+      int i = 0;
+    }
+    StepResponse sr = StepResponseFactory.getResponse(stepName);
+    return sr;
   }
 
 }

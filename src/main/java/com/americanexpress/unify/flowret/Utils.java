@@ -558,17 +558,36 @@ public class Utils {
     }
   }
 
-  protected static void dequeueWorkBasketMilestones(ProcessContext pc, String wb, ISlaQueueManager slaQm) {
+  private static boolean hasMilestones(Document slad, String wb) {
+    Document d = slad;
+    int size = d.getArraySize("$.milestones[]");
+    boolean b = false;
+
+    for (int i = 0; i < size; i++) {
+      String type = d.getString("$.milestones[%].type", i + "");
+      String s = d.getString("$.milestones[%].work_basket_name", i + "");
+
+      if ((type.equals("work_basket")) && (s != null) && (s.equals(wb))) {
+        b = true;
+        break;
+      }
+    }
+
+    return b;
+  }
+
+  protected static void dequeueWorkBasketMilestones(ProcessContext pc, String wb, Document slad, ISlaQueueManager slaQm) {
     if (wb.isEmpty()) {
       return;
     }
 
-    logger.info("Case id -> {}, raising sla milestones dequeue event on exit of work basket -> {}", pc.getCaseId(), wb);
-    slaQm.dequeue(pc, wb);
+    if (hasMilestones(slad, wb)) {
+      logger.info("Case id -> {}, raising sla milestones dequeue event on exit of work basket -> {}", pc.getCaseId(), wb);
+      slaQm.dequeue(pc, wb);
+    }
   }
 
-  protected static void enqueueWorkBasketMilestones(ProcessContext pc, SlaMilestoneSetupOn setupOn, String
-          wb, Document slad, ISlaQueueManager slaQm) {
+  protected static void enqueueWorkBasketMilestones(ProcessContext pc, SlaMilestoneSetupOn setupOn, String wb, Document slad, ISlaQueueManager slaQm) {
     Document d = slad;
     Document md = new JDocument();
     int j = 0;
@@ -591,8 +610,7 @@ public class Utils {
     }
   }
 
-  protected static void writeAuditLog(FlowretDao dao, ProcessInfo pi, Unit lastUnit, List<String> branches, String
-          compName) {
+  protected static void writeAuditLog(FlowretDao dao, ProcessInfo pi, Unit lastUnit, List<String> branches, String compName) {
     // write the process info as audit log
     long seq = dao.incrCounter("flowret_audit_log_counter-" + pi.getCaseId());
     String s = String.format("%05d", seq);

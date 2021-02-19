@@ -89,6 +89,24 @@ public class TestFlowret {
     }
   }
 
+  // pend scenario without ticket
+  public static void setScenario1() {
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND, "comp3_wb", "");
+    StepResponseFactory.addResponse("step11", UnitResponseType.OK_PEND_EOR, "comp11_wb", "");
+    StepResponseFactory.addResponse("step11", UnitResponseType.ERROR_PEND, "comp11_err1", "");
+    StepResponseFactory.addResponse("step11", UnitResponseType.ERROR_PEND, "comp11_err2", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "comp13_err3", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "comp13_err3", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "comp13_err3", "");
+    StepResponseFactory.addResponse("step14", UnitResponseType.ERROR_PEND, "comp14_wb", "");
+
+    List<String> branches = new ArrayList<>();
+    branches.add("yes");
+    RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
+    RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
+    RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
+  }
+
   // scenario with ticket no pend
   public static void setScenario2() {
     StepResponseFactory.addResponse("step16", UnitResponseType.OK_PROCEED, "", "final_step");
@@ -117,21 +135,6 @@ public class TestFlowret {
     branches.add("yes");
     RouteResponseFactory.addResponse("route3", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
-  }
-
-  // pend scenario without ticket
-  public static void setScenario1() {
-    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND, "comp3_wb", "");
-
-    StepResponseFactory.addResponse("step11", UnitResponseType.OK_PEND_EOR, "comp11_wb", "");
-    StepResponseFactory.addResponse("step11", UnitResponseType.ERROR_PEND, "comp11_err1", "");
-    StepResponseFactory.addResponse("step11", UnitResponseType.ERROR_PEND, "comp11_err2", "");
-
-    List<String> branches = new ArrayList<>();
-    branches.add("yes");
-    RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
-    RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
-    RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
   }
 
   @Test

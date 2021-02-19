@@ -40,6 +40,7 @@ public class ERRORS_FLOWRET extends ErrorMap {
     map.put("flowret_err_9", "A parallel route cannot have next specified");
     map.put("flowret_err_10", "A dynamic parallel route cannot have branches specified");
     map.put("flowret_err_11", "Journey file for case id {0} does not exist");
+    map.put("flowret_err_12", "Case id {0} -> could not find an exec path to pend to. This application cannot be repaired");
   }
 
 }

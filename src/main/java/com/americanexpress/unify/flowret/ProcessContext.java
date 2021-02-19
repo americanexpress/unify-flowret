@@ -121,6 +121,8 @@ public class ProcessContext {
         break;
 
       case ON_PROCESS_RESUME:
+        pc.stepName = pi.getExecPath(pi.getPendExecPath()).getStep();
+        pc.compName = pd.getUnit(pc.stepName).getComponentName();
         pc.pendWorkBasket = pi.getPendWorkBasket();
         break;
 

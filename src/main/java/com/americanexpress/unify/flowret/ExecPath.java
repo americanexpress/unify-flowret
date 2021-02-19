@@ -98,7 +98,6 @@ public class ExecPath {
   }
 
   protected void setPendWorkBasket(String pendWorkBasket) {
-    prevPendWorkBasket = this.pendWorkBasket;
     this.pendWorkBasket = pendWorkBasket;
   }
 

@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
+import static com.americanexpress.unify.flowret.EventType.ON_PROCESS_PEND;
+
 /*
  * @author Deepak Arora
  */
@@ -54,27 +56,40 @@ public final class Rts {
     wb = (wb == null) ? "" : wb;
     logger.info("Case id -> {}, raising event -> {}, comp name -> {}, work basket -> {}", pi.getCaseId(), event.name(), pc.getCompName(), wb);
 
-    if ((event == EventType.ON_PERSIST) || (event == EventType.ON_TICKET_RAISED)) {
-      try {
-        pi.getLock().lock();
-        eventHandler.invoke(event, pc);
-      }
-      finally {
-        pi.getLock().unlock();
-      }
-    }
-    else {
-      try {
-        eventHandler.invoke(event, pc);
-        if ((slad != null) && (slaQm != null)) {
-          raiseSlaEvent(event, pc);
+    switch (event) {
+      case ON_PROCESS_START:
+      case ON_PROCESS_RESUME:
+      case ON_PROCESS_COMPLETE:
+      case ON_PROCESS_PEND:
+        try {
+          eventHandler.invoke(event, pc);
+          if ((slad != null) && (slaQm != null)) {
+            raiseSlaEvent(event, pc);
+          }
+          if (event == ON_PROCESS_PEND) {
+            // set the prev pend work basket
+            ExecPath ep = pi.getExecPath(pi.getPendExecPath());
+            ep.setPrevPendWorkBasket(ep.getPendWorkBasket());
+          }
         }
-      }
-      catch (Exception e) {
-        // we log an error but we do not stop and the application has generated an error and we are not responsible for that
-        logger.error("Error encountered while invoking event. Case id -> {}, event type -> {}, error message -> {}", pi.getCaseId(), event.name(), e.getMessage());
-      }
+        catch (Exception e) {
+          // we log an error but we do not stop and the application has generated an error and we are not responsible for that
+          logger.error("Error encountered while invoking event. Case id -> {}, event type -> {}, error message -> {}", pi.getCaseId(), event.name(), e.getMessage());
+        }
+        break;
+
+      case ON_PERSIST:
+      case ON_TICKET_RAISED:
+        try {
+          pi.getLock().lock();
+          eventHandler.invoke(event, pc);
+        }
+        finally {
+          pi.getLock().unlock();
+        }
+        break;
     }
+
   }
 
   private void abortIfStarted(String caseId) {
@@ -201,7 +216,6 @@ public final class Rts {
 
   private void raiseSlaEvent(EventType event, ProcessContext pc) {
     Document d = null;
-    String caseId = pc.getCaseId();
 
     switch (event) {
       case ON_PROCESS_START: {
@@ -217,11 +231,11 @@ public final class Rts {
 
         if (pi.isPendAtSameStep == false) {
           if (prevPendWorkBasket.equals(tbcWorkBasket)) {
-            Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slaQm);
+            Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slad, slaQm);
           }
           else {
-            Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slaQm);
-            Utils.dequeueWorkBasketMilestones(pc, tbcWorkBasket, slaQm);
+            Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slad, slaQm);
+            Utils.dequeueWorkBasketMilestones(pc, tbcWorkBasket, slad, slaQm);
           }
           Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_exit, prevPendWorkBasket, slad, slaQm);
           Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, pendWorkBasket, slad, slaQm);
@@ -237,24 +251,24 @@ public final class Rts {
               Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, pendWorkBasket, slad, slaQm);
             }
             else {
-              Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slaQm);
+              Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slad, slaQm);
               Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_exit, prevPendWorkBasket, slad, slaQm);
               Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, pendWorkBasket, slad, slaQm);
             }
           }
           else if (ep.getUnitResponseType() == UnitResponseType.OK_PEND_EOR) {
             if (prevPendWorkBasket.equals(tbcWorkBasket)) {
-              Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slaQm);
+              Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slad, slaQm);
               Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_exit, prevPendWorkBasket, slad, slaQm);
               Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, pendWorkBasket, slad, slaQm);
               ep.setTbcSlaWorkBasket(pendWorkBasket);
             }
             else {
-              Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slaQm);
+              Utils.dequeueWorkBasketMilestones(pc, prevPendWorkBasket, slad, slaQm);
               Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_exit, prevPendWorkBasket, slad, slaQm);
 
               if (pendWorkBasket.equals(tbcWorkBasket) == false) {
-                Utils.dequeueWorkBasketMilestones(pc, tbcWorkBasket, slaQm);
+                Utils.dequeueWorkBasketMilestones(pc, tbcWorkBasket, slad, slaQm);
                 Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_exit, tbcWorkBasket, slad, slaQm);
                 Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, pendWorkBasket, slad, slaQm);
                 ep.setTbcSlaWorkBasket(pendWorkBasket);
