@@ -972,9 +972,6 @@ A sample file is shown below:
 }
 ```
 
-Flowret also writes out the process info file. The format and contents of this file is the same as that
-of the audit log file. This file is written after each step / route is executed
-
 In addition to the audit logs being generated, Flowret also does logging to console.
 
 Below are the audit log documents created (assuming that we are persisting to the file system):
@@ -1001,6 +998,28 @@ Received event -> ON_PROCESS_START
 [com.americanexpress.unify.flowret.ExecThreadTask] - Case id -> 2, executing step -> step_8, component -> step_8, execution path -> .
 Received event -> ON_PROCESS_COMPLETE
 ```
+
+Audit logs maintain a history of the steps and routes which have been called as part of running the process. However,
+it is upto the application to specify if the audit logs are to be generated. If no audit logs are required, their
+generation can be turned off by calling the following method on the Flowret singleton. By default, audit logging
+is turned on:
+
+```java
+  Flowret.getInstance().setWriteAuditLog(false);
+```
+
+Flowret also writes out the process info file. The format and contents of this file is the same as that
+of the audit log file. By default, this file is written after each step / route is executed. However, it is possible to
+write this file only when the process completes or pends. This can be acheived by turning on the option
+in Flowret by calling the following method:
+
+```java
+  Flowret.getInstance().setWriteProcessInfoAfterEachStep(false);
+```
+
+Be warned though that if this option is used and there is a JVM crash which happens, the process will be resumed
+from the last recorded position which may be many steps back. In such a situation, the steps will again be executed. Hence
+the application may want to explore the possibility of using idempotent services when using this option.
 
 ---
 
@@ -1254,7 +1273,7 @@ on different time zones
 1. `action` - this is a user defined field which Flowret will pass to the application when the milestone
 is to be setup. Flowret does not interpret this field in any way 
 1. `user_data` - this is another user defined field which Flowret will pass to the application when the milestone
-is to be setup. Flowret does not interpret this field in any way 
+is to be setup. Flowret does not interpret this field in any way
 
 **The "further_milestones" block**
 

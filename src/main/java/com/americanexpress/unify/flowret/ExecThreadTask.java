@@ -189,7 +189,7 @@ public class ExecThreadTask implements Runnable {
       }
 
       if (next.equalsIgnoreCase("end") == false) {
-        writeProcessInfoAndAuditLog(pi, unit);
+        writeProcessInfoAndAuditLog(pi, unit, Flowret.instance().isWriteProcessInfoAfterEachStep());
       }
       else {
         execPath.set(ExecPathStatus.COMPLETED, execPath.getStep(), UnitResponseType.OK_PROCEED);
@@ -228,10 +228,10 @@ public class ExecThreadTask implements Runnable {
           // this will not happen
         }
       }
-      writeProcessInfoAndAuditLog(pi, unit);
+      writeProcessInfoAndAuditLog(pi, unit, true);
     }
     else {
-      writeProcessInfoAndAuditLog(pi, unit);
+      writeProcessInfoAndAuditLog(pi, unit, true);
     }
 
     return pc;
@@ -538,7 +538,11 @@ public class ExecThreadTask implements Runnable {
 
     try {
       pi.getLock().lock();
-      writeProcessInfo(pi, route);
+
+      if (Flowret.instance().isWriteProcessInfoAfterEachStep() == true) {
+        writeProcessInfo(pi, route);
+      }
+
       writeAuditLog(pi, route, resp.getBranches());
       writeAuditLog = false;
     }
@@ -714,8 +718,8 @@ public class ExecThreadTask implements Runnable {
             pendedEp = path;
             break;
           }
-          }
         }
+      }
 
       if (isComplete == true) {
         // we need to become parent and continue processing
@@ -844,10 +848,14 @@ public class ExecThreadTask implements Runnable {
     return sr;
   }
 
-  private void writeProcessInfoAndAuditLog(ProcessInfo pi, Unit lastUnit) {
+  private void writeProcessInfoAndAuditLog(ProcessInfo pi, Unit lastUnit, boolean writeProcessInfo) {
     try {
       pi.getLock().lock();
-      writeProcessInfo(pi, lastUnit);
+
+      if (writeProcessInfo == true) {
+        writeProcessInfo(pi, lastUnit);
+      }
+
       writeAuditLog(pi, lastUnit, null);
     }
     finally {
@@ -862,6 +870,10 @@ public class ExecThreadTask implements Runnable {
   }
 
   private void writeAuditLog(ProcessInfo pi, Unit lastUnit, List<String> branches) {
+    if (Flowret.instance().isWriteAuditLog() == false) {
+      return;
+    }
+
     if (writeAuditLog == false) {
       writeAuditLog = true;
       return;

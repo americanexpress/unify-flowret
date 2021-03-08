@@ -31,6 +31,8 @@ public class Flowret {
   private int maxThreads = 10;
   private int idleTimeout = 30000;
   private ExecutorService es = null;
+  private volatile boolean writeAuditLog = true;
+  private volatile boolean writeProcessInfoAfterEachStep = true;
 
   /**
    * @return an instance of Flowret
@@ -108,6 +110,22 @@ public class Flowret {
 
   protected ExecutorService getExecutorService() {
     return es;
+  }
+
+  public void setWriteAuditLog(boolean writeAuditLog) {
+    this.writeAuditLog = writeAuditLog;
+  }
+
+  public void setWriteProcessInfoAfterEachStep(boolean writeProcessInfoAfterEachStep) {
+    this.writeProcessInfoAfterEachStep = writeProcessInfoAfterEachStep;
+  }
+
+  public boolean isWriteAuditLog() {
+    return writeAuditLog;
+  }
+
+  public boolean isWriteProcessInfoAfterEachStep() {
+    return writeProcessInfoAfterEachStep;
   }
 
 }

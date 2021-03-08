@@ -46,6 +46,8 @@ public class TestFlowret {
 
     ERRORS_FLOWRET.load();
     Flowret.init(10, 30000, "-");
+    //    Flowret.instance().setWriteAuditLog(false);
+    //    Flowret.instance().setWriteProcessInfoAfterEachStep(false);
   }
 
   @BeforeEach
