@@ -1,0 +1,38 @@
+{
+  "milestones": [
+    {
+      "name": "case_start_1",
+      "setup_on": "case_start",
+      "type": "case_level",
+      "applied_at_age": "20d",
+      "clock_starts": "immediately",
+      "action": "CANCEL:CW"
+    },
+    {
+      "name": "case_start_2",
+      "setup_on": "case_start",
+      "type": "case_level",
+      "applied_at_age": "30d",
+      "clock_starts": "immediately",
+      "action": "CANCEL:CW"
+    },
+    {
+      "name": "comp3_wb_entry",
+      "setup_on": "work_basket_entry",
+      "type": "work_basket",
+      "work_basket_name": "comp3_wb",
+      "applied_at_age": "30m",
+      "clock_starts": "immediately",
+      "action": "CORR"
+    },
+    {
+      "name": "reopen_wb",
+      "setup_on": "work_basket_entry",
+      "type": "work_basket",
+      "work_basket_name": "comp3_wb",
+      "applied_at_age": "30m",
+      "clock_starts": "immediately",
+      "action": "CORR"
+    }
+  ]
+}

@@ -14,6 +14,7 @@
 
 package com.americanexpress.unify.flowret;
 
+import com.americanexpress.unify.jdocs.BaseUtils;
 import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.JDocument;
 import com.americanexpress.unify.jdocs.UnifyException;
@@ -39,6 +40,7 @@ public final class Rts {
   protected Document slad = null;
   protected ProcessInfo pi = null;
   protected ISlaQueueManager slaQm = null;
+  protected String lastPendWorkBasket = null;
 
   protected Rts(FlowretDao dao, ProcessComponentFactory factory, EventHandler eventHandler, ISlaQueueManager slaQm) {
     this.dao = dao;
@@ -61,6 +63,7 @@ public final class Rts {
       case ON_PROCESS_RESUME:
       case ON_PROCESS_COMPLETE:
       case ON_PROCESS_PEND:
+      case ON_PROCESS_REOPEN:
         try {
           eventHandler.invoke(event, pc);
           if ((slad != null) && (slaQm != null)) {
@@ -156,13 +159,13 @@ public final class Rts {
 
     // start case
     if (bContinue == true) {
-      pc = resumeCase(caseId, false);
+      pc = resumeCase(caseId, false, null);
     }
 
     return pc;
   }
 
-  private ProcessContext resumeCase(String caseId, boolean raiseResumeEvent) {
+  private ProcessContext resumeCase(String caseId, boolean raiseResumeEvent, ProcessVariables pvs) {
     if (raiseResumeEvent == true) {
       // we are being called on our own
       // read process definition
@@ -174,6 +177,14 @@ public final class Rts {
       pd = Utils.getProcessDefinition(d);
       pi = Utils.getProcessInfo(dao, caseId, pd);
       pi.isPendAtSameStep = true;
+
+      // update process variables. We will add or update the ones passed in but not delete any
+      if (pvs != null) {
+        List<ProcessVariable> list = pvs.getListOfProcessVariables();
+        for (ProcessVariable pv : list) {
+          pi.setProcessVariable(pv);
+        }
+      }
 
       // read sla configuration
       key = CONSTS_FLOWRET.DAO.JOURNEY_SLA + CONSTS_FLOWRET.DAO.SEP + caseId;
@@ -192,6 +203,12 @@ public final class Rts {
         pc = ProcessContext.forEvent(EventType.ON_PROCESS_RESUME, this, pi.getPendExecPath());
         invokeEventHandler(EventType.ON_PROCESS_RESUME, pc);
       }
+
+      if (pi.getTicket().isEmpty() == false) {
+        pc = ProcessContext.forEvent(EventType.ON_TICKET_RAISED, this, pi.getPendExecPath());
+        invokeEventHandler(EventType.ON_TICKET_RAISED, pc);
+      }
+
     }
     catch (Exception e) {
       bContinue = false;
@@ -211,7 +228,76 @@ public final class Rts {
   }
 
   public ProcessContext resumeCase(String caseId) {
-    return resumeCase(caseId, true);
+    return resumeCase(caseId, true, null);
+  }
+
+  public ProcessContext resumeCase(String caseId, ProcessVariables pvs) {
+    return resumeCase(caseId, true, pvs);
+  }
+
+  public ProcessContext reopenCase(String caseId, String ticket, boolean pendBeforeResume, String pendWb) {
+    if (pendBeforeResume == true) {
+      if (BaseUtils.isNullOrEmpty(pendWb)) {
+        throw new UnifyException("flowret_err_14", caseId);
+      }
+    }
+    if (BaseUtils.isNullOrEmpty(ticket)) {
+      throw new UnifyException("flowret_err_15", caseId);
+    }
+
+    // read journey file, process definition, process info and sla file
+    String key = CONSTS_FLOWRET.DAO.JOURNEY + CONSTS_FLOWRET.DAO.SEP + caseId;
+    Document d = dao.read(key);
+    if (d == null) {
+      throw new UnifyException("flowret_err_2", caseId);
+    }
+    pd = Utils.getProcessDefinition(d);
+    pi = Utils.getProcessInfo(dao, caseId, pd);
+    pi.isPendAtSameStep = false;
+    key = CONSTS_FLOWRET.DAO.JOURNEY_SLA + CONSTS_FLOWRET.DAO.SEP + caseId;
+    slad = dao.read(key);
+
+    // check that the case should be completed
+    if (pi.isCaseCompleted() == false) {
+      throw new UnifyException("flowret_err_13", caseId);
+    }
+
+    // update relevant fields in the process info
+    pi.getSetter().setPendExecPath(".");
+    pi.setCaseCompleted(false);
+    ExecPath ep = pi.getExecPath(".");
+    if (pendBeforeResume == true) {
+      ep.setPendWorkBasket(pendWb);
+      ep.setUnitResponseType(UnitResponseType.OK_PEND);
+    }
+    ep.setTicket(ticket);
+    pi.getSetter().setTicket(ticket);
+
+    // write back the process info
+    dao.write(CONSTS_FLOWRET.DAO.PROCESS_INFO + CONSTS_FLOWRET.DAO.SEP + caseId, pi.getDocument());
+
+    ProcessContext pc = null;
+
+    // invoke event handler
+    try {
+      pc = ProcessContext.forEvent(EventType.ON_PROCESS_REOPEN, this, ".");
+      invokeEventHandler(EventType.ON_PROCESS_REOPEN, pc);
+
+      pc = ProcessContext.forEvent(ON_PROCESS_PEND, this, ".");
+      invokeEventHandler(ON_PROCESS_PEND, pc);
+    }
+    catch (Exception e) {
+      logger.info("Case id -> " + pi.getCaseId() + ", exception encountered while raising event");
+      logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
+      logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
+    }
+
+    // resume the case if required
+    if (pendBeforeResume == false) {
+      pc = resumeCase(caseId, true, null);
+    }
+
+    return pc;
   }
 
   private void raiseSlaEvent(EventType event, ProcessContext pc) {
@@ -220,6 +306,11 @@ public final class Rts {
     switch (event) {
       case ON_PROCESS_START: {
         Utils.enqueueCaseStartMilestones(pc, slad, slaQm);
+        break;
+      }
+
+      case ON_PROCESS_REOPEN: {
+        Utils.enqueueCaseRestartMilestones(pc, slad, slaQm);
         break;
       }
 

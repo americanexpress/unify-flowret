@@ -30,10 +30,20 @@ public class ProcessContext {
   private ProcessVariables processVariables = null;
   private String execPathName = null;
   private String pendWorkBasket = null;
+  private String lastPendWorkBasket = null;
   private ErrorTuple pendErrorTuple = new ErrorTuple(); // only valid for pend event
   private boolean isPendAtSameStep = false;
+  private String ticketName = null;
 
   public ProcessContext(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName) {
+    init(journeyName, caseId, stepName, compName, userData, compType, processVariables, execPathName, null, null);
+  }
+
+  public ProcessContext(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName, String lastPendWorkBasket, Boolean isPendAtSameStep) {
+    init(journeyName, caseId, stepName, compName, userData, compType, processVariables, execPathName, lastPendWorkBasket, isPendAtSameStep);
+  }
+
+  private void init(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName, String lastPendWorkBasket, Boolean isPendAtSameStep) {
     this.journeyName = journeyName;
     this.caseId = caseId;
     this.stepName = stepName;
@@ -44,6 +54,10 @@ public class ProcessContext {
       this.processVariables = processVariables;
     }
     this.execPathName = execPathName;
+    this.lastPendWorkBasket = lastPendWorkBasket;
+    if (isPendAtSameStep != null) {
+      this.isPendAtSameStep = isPendAtSameStep;
+    }
   }
 
   private ProcessContext() {
@@ -55,6 +69,10 @@ public class ProcessContext {
 
   public String getPendWorkBasket() {
     return pendWorkBasket;
+  }
+
+  public String getLastPendWorkBasket() {
+    return lastPendWorkBasket;
   }
 
   public String getExecPathName() {
@@ -93,6 +111,10 @@ public class ProcessContext {
     return processVariables;
   }
 
+  public String getTicketName() {
+    return ticketName;
+  }
+
   public static ProcessContext forEvent(EventType eventType, Rts rts, String epName) {
     ProcessContext pc = new ProcessContext();
     ProcessDefinition pd = rts.pd;
@@ -106,9 +128,13 @@ public class ProcessContext {
     pc.isPendAtSameStep = pi.isPendAtSameStep;
 
     switch (eventType) {
-      case ON_PERSIST:
-      case ON_PROCESS_COMPLETE:
       case ON_PROCESS_START:
+        break;
+
+      case ON_PERSIST:
+        break;
+
+      case ON_PROCESS_COMPLETE:
         break;
 
       case ON_PROCESS_PEND:
@@ -124,13 +150,20 @@ public class ProcessContext {
         pc.stepName = pi.getExecPath(pi.getPendExecPath()).getStep();
         pc.compName = pd.getUnit(pc.stepName).getComponentName();
         pc.pendWorkBasket = pi.getPendWorkBasket();
+        rts.lastPendWorkBasket = pc.pendWorkBasket;
         break;
 
       case ON_TICKET_RAISED:
+        pc.ticketName = pi.getTicket();
         pc.stepName = pi.getExecPath(epName).getStep();
         pc.compName = pd.getUnit(pc.stepName).getComponentName();
         pc.userData = pd.getUnit(pc.stepName).getUserData();
         pc.compType = pd.getUnit(pc.stepName).getType();
+        break;
+
+      case ON_PROCESS_REOPEN:
+        pc.stepName = pi.getExecPath(epName).getStep();
+        pc.compName = pd.getUnit(pc.stepName).getComponentName();
         break;
     }
 

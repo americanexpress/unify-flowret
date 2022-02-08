@@ -18,10 +18,7 @@ import com.americanexpress.unify.flowret.*;
 import com.americanexpress.unify.flowret.test_singular.TestFlowret;
 import com.americanexpress.unify.jdocs.BaseUtils;
 import com.americanexpress.unify.jdocs.UnifyException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 
@@ -30,7 +27,7 @@ import java.io.File;
  */
 public class TestFlowretParallel {
 
-  private static String dirPath = null;
+  private static String dirPath = "./target/test-data-results/";
   private static Rts rts = null;
 
   private static FileDao dao = null;
@@ -39,25 +36,30 @@ public class TestFlowretParallel {
 
   @BeforeAll
   protected static void setEnv() throws Exception {
-    if (dirPath == null) {
-      //      System.out.println("Please specify directory path as the first and only argument e.g. C:/Temp/");
-      //      System.out.println("Do not forget to supply the trailing /");
-      //      System.exit(1);
-      dirPath = "C:/Deepak/Temp/";
+    File directory = new File(dirPath);
+    if (!directory.exists()) {
+      directory.mkdir();
     }
 
     ERRORS_FLOWRET.load();
     Flowret.init(10, 30000, "-");
   }
 
-  @AfterAll
-  protected static void close() {
-    Flowret.instance().close();
-  }
-
   @BeforeEach
   protected void beforeEach() {
+    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
+  }
+
+  @AfterEach
+  protected void afterEach() {
+    // nothing to do
+  }
+
+  @AfterAll
+  protected static void afterAll() {
+    Flowret.instance().close();
+    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
   }
 
   // 3 branches, happy path i.e. all branches proceed

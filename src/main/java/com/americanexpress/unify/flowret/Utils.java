@@ -558,6 +558,27 @@ public class Utils {
     }
   }
 
+  protected static void enqueueCaseRestartMilestones(ProcessContext pc, Document slad, ISlaQueueManager slaQm) {
+    Document d = slad;
+    Document md = new JDocument();
+    int j = 0;
+    int size = d.getArraySize("$.milestones[]");
+
+    for (int i = 0; i < size; i++) {
+      String s = d.getString("$.milestones[%].setup_on", i + "");
+      if (s.equals(SlaMilestoneSetupOn.case_restart.toString())) {
+        md.setContent(d, "$.milestones[%]", "$.milestones[%]", i + "", j + "");
+        j++;
+      }
+    }
+
+    size = md.getArraySize("$.milestones[]");
+    if (size > 0) {
+      logger.info("Case id -> {}, raising sla milestones enqueue event on case restart for milestones -> {}", pc.getCaseId(), md.getPrettyPrintJson());
+      slaQm.enqueue(pc, md);
+    }
+  }
+
   private static boolean hasMilestones(Document slad, String wb) {
     Document d = slad;
     int size = d.getArraySize("$.milestones[]");

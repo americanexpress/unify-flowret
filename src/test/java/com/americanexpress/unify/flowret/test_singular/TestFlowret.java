@@ -17,31 +17,40 @@ package com.americanexpress.unify.flowret.test_singular;
 import com.americanexpress.unify.flowret.*;
 import com.americanexpress.unify.jdocs.BaseUtils;
 import com.americanexpress.unify.jdocs.UnifyException;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /*
  * @author Deepak Arora
  */
 public class TestFlowret {
 
-  private static String dirPath = null;
+  // NOTE -> while setting the contents of the expected files, do not use the IntelliJ editor
+  // When we run the assertEquals method, for some reason, the empty space at the end of the line in the
+  // contents of the expected file is being trimmed. This does not happen if we use Notepad++ to
+  // save the contents of the expected files
+
+  private static String dirPath = "./target/test-data-results/";
   private static Rts rts = null;
+  private static PrintStream previousConsole = null;
+  private static ByteArrayOutputStream newConsole = null;
 
   @BeforeAll
   protected static void setEnv() {
-    dirPath = System.getenv("TestFlowretDirPath");
-    if (dirPath == null) {
-      //      System.out.println("Please specify directory path as a system property");
-      //      System.out.println("Do not forget to supply the trailing /  e.g. C:/Temp/");
-      //      System.exit(1);
-      dirPath = "C:/Deepak/Temp/";
+    previousConsole = System.out;
+    newConsole = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(newConsole));
+
+    File directory = new File(dirPath);
+    if (!directory.exists()) {
+      directory.mkdir();
     }
 
     ERRORS_FLOWRET.load();
@@ -52,12 +61,21 @@ public class TestFlowret {
 
   @BeforeEach
   protected void beforeEach() {
+    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
+    newConsole.reset();
+  }
+
+  @AfterEach
+  protected void afterEach() {
+    // nothing to do
   }
 
   @AfterAll
-  protected static void close() {
+  protected static void afterAll() {
+    System.setOut(previousConsole);
     Flowret.instance().close();
+    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {
@@ -139,6 +157,18 @@ public class TestFlowret {
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
   }
 
+  private void myAssertEquals(String testCase, String resourcePath) {
+    String s = newConsole.toString();
+    String output = BaseUtils.getWithoutCarriageReturn(s);
+    String expected = BaseUtils.getResourceAsString(TestFlowret.class, resourcePath);
+    expected = BaseUtils.getWithoutCarriageReturn(expected);
+    assertEquals(expected, output);
+    previousConsole.println();
+    previousConsole.println();
+    previousConsole.println("*********************** " + testCase + " ***********************");
+    previousConsole.println(s);
+  }
+
   @Test
   void testClean() {
     List<String> branches = new ArrayList<>();
@@ -146,9 +176,9 @@ public class TestFlowret {
     RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
-
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
+    myAssertEquals("testClean", "/flowret/test_singular/test_clean_expected.txt");
   }
 
   @Test
@@ -156,6 +186,7 @@ public class TestFlowret {
     setScenario1();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
+    myAssertEquals("testScenario1", "/flowret/test_singular/test_scenario_1_expected.txt");
   }
 
   @Test
@@ -163,6 +194,7 @@ public class TestFlowret {
     setScenario1();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
     runJourney("test_journey");
+    myAssertEquals("testScenario1WithSla", "/flowret/test_singular/test_scenario_1_sla_expected.txt");
   }
 
   @Test
@@ -170,6 +202,7 @@ public class TestFlowret {
     setScenario2();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
+    myAssertEquals("testScenario2", "/flowret/test_singular/test_scenario_2_expected.txt");
   }
 
   @Test
@@ -177,6 +210,7 @@ public class TestFlowret {
     setScenario2();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
     runJourney("test_journey");
+    myAssertEquals("testScenario2WithSla", "/flowret/test_singular/test_scenario_2_sla_expected.txt");
   }
 
   @Test
@@ -184,6 +218,7 @@ public class TestFlowret {
     setScenario3();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
+    myAssertEquals("testScenario3", "/flowret/test_singular/test_scenario_3_expected.txt");
   }
 
   @Test
@@ -191,6 +226,7 @@ public class TestFlowret {
     setScenario3();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
     runJourney("test_journey");
+    myAssertEquals("testScenario3WithSla", "/flowret/test_singular/test_scenario_3_sla_expected.txt");
   }
 
   @Test
@@ -198,6 +234,7 @@ public class TestFlowret {
     setScenario4();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
+    myAssertEquals("testScenario4", "/flowret/test_singular/test_scenario_4_expected.txt");
   }
 
   @Test
@@ -205,6 +242,7 @@ public class TestFlowret {
     setScenario4();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
     runJourney("test_journey");
+    myAssertEquals("testScenario4WithSla", "/flowret/test_singular/test_scenario_4_sla_expected.txt");
   }
 
   @Test
@@ -212,6 +250,7 @@ public class TestFlowret {
     // set responses todo
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
     runJourney("test_persist");
+    myAssertEquals("testPersist", "/flowret/test_singular/test_persist_expected.txt");
   }
 
   @Test
@@ -221,9 +260,9 @@ public class TestFlowret {
     RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
-
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
+    myAssertEquals("testResume", "/flowret/test_singular/test_resume_expected.txt");
   }
 
 }

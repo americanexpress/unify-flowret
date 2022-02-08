@@ -28,6 +28,7 @@ public class TestStepParallelSupps implements InvokableStep {
   private String name = null;
   private ProcessContext pc = null;
   private static Map<String, String> responses = new ConcurrentHashMap<>();
+  private static volatile boolean setOnce = true;
 
   public TestStepParallelSupps(ProcessContext pc) {
     this.name = pc.getCompName();
@@ -44,7 +45,19 @@ public class TestStepParallelSupps implements InvokableStep {
     String s = MessageFormat.format("Step -> {0}, execution path -> {1}", pc.getStepName(), pc.getExecPathName());
     System.out.println(s);
 
-    response = get(100, UnitResponseType.OK_PROCEED, null);
+    if (pc.getStepName().equals("step_1")) {
+      if (setOnce == true) {
+        setOnce = false;
+        response = get(100, UnitResponseType.ERROR_PEND, null);
+      }
+      else {
+        response = get(100, UnitResponseType.OK_PROCEED, null);
+      }
+    }
+    else {
+      response = get(100, UnitResponseType.OK_PROCEED, null);
+    }
+
     try {
       Thread.sleep(1000);
     }

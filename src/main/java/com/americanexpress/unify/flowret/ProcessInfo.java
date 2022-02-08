@@ -200,6 +200,10 @@ public class ProcessInfo {
     this.isComplete = true;
   }
 
+  protected void setCaseCompleted(boolean isComplete) {
+    this.isComplete = isComplete;
+  }
+
   protected void clearPendWorkBaskets() {
     List<ExecPath> paths = new ArrayList<>(execPaths.values());
     for (ExecPath path : paths) {
@@ -212,8 +216,8 @@ public class ProcessInfo {
 
     // write last executed unit details
     if (lastUnitExecuted == null) {
-      d.setString("$.process_info.last_executed_step", "end");
-      d.setString("$.process_info.last_executed_comp_name", "end");
+      d.setString("$.process_info.last_executed_step", "");
+      d.setString("$.process_info.last_executed_comp_name", "");
     }
     else {
       d.setString("$.process_info.last_executed_step", lastUnitExecuted.getName());

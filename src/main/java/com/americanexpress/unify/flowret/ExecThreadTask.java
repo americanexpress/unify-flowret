@@ -558,7 +558,6 @@ public class ExecThreadTask implements Runnable {
       }
 
       case OK_PROCEED: {
-
         String joinPoint = executeThreads(execPath, route, resp.getBranches());
 
         if (joinPoint != null) {
@@ -835,7 +834,7 @@ public class ExecThreadTask implements Runnable {
 
     try {
       ProcessComponentFactory factory = rts.factory;
-      pc = new ProcessContext(pd.getName(), pi.getCaseId(), step.getName(), step.getComponentName(), step.getUserData(), UnitType.STEP, pi.getProcessVariables(), execPath.getName());
+      pc = new ProcessContext(pd.getName(), pi.getCaseId(), step.getName(), step.getComponentName(), step.getUserData(), UnitType.STEP, pi.getProcessVariables(), execPath.getName(), rts.lastPendWorkBasket, pi.isPendAtSameStep);
       InvokableStep iStep = (InvokableStep)factory.getObject(pc);
       sr = iStep.executeStep();
     }

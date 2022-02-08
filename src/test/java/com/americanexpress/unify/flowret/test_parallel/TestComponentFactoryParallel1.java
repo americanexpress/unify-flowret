@@ -12,24 +12,29 @@
  * the License.
  */
 
-package com.americanexpress.unify.flowret;
+package com.americanexpress.unify.flowret.test_parallel;
+
+import com.americanexpress.unify.flowret.ProcessComponentFactory;
+import com.americanexpress.unify.flowret.ProcessContext;
+import com.americanexpress.unify.flowret.UnitType;
 
 /*
  * @author Deepak Arora
  */
-public class TestHandler implements EventHandler {
+public class TestComponentFactoryParallel1 implements ProcessComponentFactory {
 
   @Override
-  public void invoke(EventType event, ProcessContext pc) {
-    System.out.println("Received event -> " + event.toString() + ", isPendAtSameStep -> " + pc.isPendAtSameStep());
+  public Object getObject(ProcessContext pc) {
+    Object o = null;
 
-    if (event == EventType.ON_PROCESS_PEND) {
-      System.out.println("Pend workbasket -> " + pc.getPendWorkBasket());
+    if ((pc.getCompType() == UnitType.S_ROUTE) || (pc.getCompType() == UnitType.P_ROUTE) || (pc.getCompType() == UnitType.P_ROUTE_DYNAMIC)) {
+      o = new TestRuleParallel(pc);
+    }
+    else if (pc.getCompType() == UnitType.STEP) {
+      o = new TestStepParallel1(pc);
     }
 
-    if (event == EventType.ON_TICKET_RAISED) {
-      System.out.println("Ticket raised -> " + pc.getTicketName());
-    }
+    return o;
   }
 
 }

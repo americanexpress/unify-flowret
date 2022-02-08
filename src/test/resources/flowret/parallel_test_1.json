@@ -1,0 +1,69 @@
+{
+  "journey": {
+    "global_codebase_version": 1,
+    "name": "parallel_test",
+    "process_variables": [
+      {
+        "name": "id",
+        "type": "string",
+        "value": "id1"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "start",
+        "next": "step_1"
+      },
+      {
+        "name": "step_1",
+        "component": "step_1_comp",
+        "next": "route_1"
+      },
+      {
+        "name": "route_1",
+        "type": "p_route",
+        "component": "route_1_comp",
+        "branches": [
+          {
+            "name": "1",
+            "next": "step_wait_1"
+          },
+          {
+            "name": "2",
+            "next": "step_wait_2"
+          },
+          {
+            "name": "3",
+            "next": "step_wait_3"
+          }
+        ]
+      },
+      {
+        "name": "step_wait_1",
+        "component": "step_wait_1_comp",
+        "next": "join_1"
+      },
+      {
+        "name": "step_wait_2",
+        "component": "step_wait_2_comp",
+        "next": "join_1"
+      },
+      {
+        "name": "step_wait_3",
+        "component": "step_wait_3_comp",
+        "next": "join_1"
+      },
+      {
+        "name": "join_1",
+        "type": "p_join",
+        "next": "step_3"
+      },
+      {
+        "name": "step_3",
+        "component": "step_3_comp",
+        "next": "end"
+      }
+    ]
+  }
+}

@@ -155,4 +155,8 @@ public class ExecPath {
     return pendErrorTuple;
   }
 
+  protected void setUnitResponseType(UnitResponseType unitResponseType) {
+    this.unitResponseType = unitResponseType;
+  }
+
 }

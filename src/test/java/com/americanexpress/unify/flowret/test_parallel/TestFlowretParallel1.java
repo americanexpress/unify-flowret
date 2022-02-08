@@ -12,10 +12,12 @@
  * the License.
  */
 
-package com.americanexpress.unify.flowret.test_parallel_dyn;
+package com.americanexpress.unify.flowret.test_parallel;
 
 import com.americanexpress.unify.flowret.*;
+import com.americanexpress.unify.flowret.test_singular.TestFlowret;
 import com.americanexpress.unify.jdocs.BaseUtils;
+import com.americanexpress.unify.jdocs.UnifyException;
 import org.junit.jupiter.api.*;
 
 import java.io.File;
@@ -23,7 +25,7 @@ import java.io.File;
 /*
  * @author Deepak Arora
  */
-public class TestFlowretParallelDynamic {
+public class TestFlowretParallel1 {
 
   private static String dirPath = "./target/test-data-results/";
   private static Rts rts = null;
@@ -56,32 +58,40 @@ public class TestFlowretParallelDynamic {
   @AfterAll
   protected static void afterAll() {
     Flowret.instance().close();
+    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
   }
 
+  // 3 branches, happy path i.e. all branches proceed
   public static void setScenario1() {
     // nothing to do
-  }
-
-  private static void runJourney(String journey) {
-    String json = BaseUtils.getResourceAsString(TestFlowretParallelDynamic.class, "/flowret/" + journey + ".json");
-
-    if (new File(dirPath + "flowret_journey-3.json ").exists() == false) {
-      rts.startCase("3", json, null, null);
-    }
-    else {
-      rts.resumeCase("3");
-    }
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {
     rts = Flowret.instance().getRunTimeService(dao, factory, handler, sqm);
   }
 
+  private static void runJourney(String journey) {
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+      rts.startCase("1", json, null, null);
+    }
+
+    try {
+      while (true) {
+        System.out.println();
+        rts.resumeCase("1");
+      }
+    }
+    catch (UnifyException e) {
+      System.out.println("Exception -> " + e.getMessage());
+    }
+  }
+
   @Test
   void testScenario1() {
     setScenario1();
-    init(new FileDao(dirPath), new TestComponentFactoryParallelSupps(), new TestHandler(), null);
-    runJourney("parallel_dyn_test");
+    init(new FileDao(dirPath), new TestComponentFactoryParallel1(), new TestHandler(), null);
+    runJourney("parallel_test_1");
   }
 
 }

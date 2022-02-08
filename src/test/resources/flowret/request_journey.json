@@ -1,0 +1,104 @@
+{
+  "journey": {
+    "name": "request_journey",
+    "tickets": [
+      {
+        "name": "reject_ticket",
+        "step": "reject_notification"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "steps_executed",
+        "type": "string",
+        "value": ""
+      },
+      {
+        "name": "step_count",
+        "type": "integer",
+        "value": "0"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "startComp",
+        "next": "validate"
+      },
+      {
+        "name": "validate",
+        "component": "validateComp",
+        "next": "manager_approval"
+      },
+      {
+        "name": "manager_approval",
+        "component": "mgrApprovalComp",
+        "next": "additional_approval_route"
+      },
+      {
+        "name": "additional_approval_route",
+        "type": "p_route",
+        "component": "additionalApprovalRouteComp",
+        "branches": [
+          {
+            "name": "branch1",
+            "next": "resource_approval"
+          },
+          {
+            "name": "branch2",
+            "next": "compliance_approval"
+          },
+          {
+            "name": "branch3",
+            "next": "second_level_manager_approval"
+          }
+        ]
+      },
+      {
+        "name": "resource_approval",
+        "component": "resourceApprovalComp",
+        "next": "additional_approval_join"
+      },
+      {
+        "name": "compliance_approval",
+        "component": "complianceApprovalComp",
+        "next": "additional_approval_join"
+      },
+      {
+        "name": "second_level_manager_approval",
+        "component": "secondLevelManagerApprovalComp",
+        "next": "additional_approval_join"
+      },
+      {
+        "name": "additional_approval_join",
+        "type": "p_join",
+        "next": "approval_notification"
+      },
+      {
+        "name": "approval_notification",
+        "component": "approvalNotificationComp",
+        "next": "provision_resource"
+      },
+      {
+        "name": "provision_resource",
+        "component": "provisionResourceComp",
+        "next": "provision_notification"
+      },
+      {
+        "name": "provision_notification",
+        "component": "provisionNotificationComp",
+        "next": "end"
+      },
+      {
+        "name": "reject_notification",
+        "component": "rejectNotificationComp",
+        "next": "reject"
+      },
+      {
+        "name": "reject",
+        "component": "rejectComp",
+        "next": "end"
+      }
+    ]
+  }
+}
