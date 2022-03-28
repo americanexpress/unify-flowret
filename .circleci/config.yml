@@ -5,26 +5,20 @@ workflows:
   build:
     jobs:
       - build:
-          context: gradle
-
+          context:
+            - maven_central_credentials
 jobs:
   build:
     docker:
-      - image: circleci/openjdk:8-jdk-stretch
-
+      - image: cimg/openjdk:8.0.322
     steps:
       - checkout
-
       - restore_cache:
           key: unify-flowret-{{ checksum "pom.xml" }}
-
-      - run: mvn --settings ".circle.settings.xml" dependency:go-offline
-
+      - run: mvn --settings ".circleci/settings.xml" -B -DskipTests clean deploy -e -X
       - save_cache: # saves the project dependencies
           paths:
             - ~/.m2
           key: unify-flowret-{{ checksum "pom.xml" }}
 
-      - run: mvn install
 
-      - run: mvn --settings ".circle.settings.xml" deploy

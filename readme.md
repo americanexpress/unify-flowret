@@ -15,63 +15,12 @@ orchestrator we have built. It is lightweight, small, a pleasure to use and budd
 
 #### Getting Flowret package
 
-[ ![Download](https://api.bintray.com/packages/americanexpress/maven/com.americanexpress.unify.flowret/images/download.svg) ](https://bintray.com/americanexpress/maven/com.americanexpress.unify.flowret/_latestVersion)
-
-Flowret is available as a jar file in Bintray JCenter with the following Maven coordinates. The latest
-version is available in the version badge on this page:
+Flowret is available as a jar file in Maven central with the following Maven coordinates. The latest version is 1.2.0.
 
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
 <version>x.y.z</version>
-````
-
-In order to fetch Flowret from JCenter using Maven, include the following in your Maven settings.xml file
-as shown below.
-
-````pom
-<?xml version="1.0" encoding="UTF-8" ?>
-<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'
-          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
-    
-    <profiles>
-        <profile>
-            <repositories>
-                <repository>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                    <id>central</id>
-                    <name>bintray</name>
-                    <url>https://jcenter.bintray.com</url>
-                </repository>
-            </repositories>
-            <pluginRepositories>
-                <pluginRepository>
-                    <snapshots>
-                        <enabled>false</enabled>
-                    </snapshots>
-                    <id>central</id>
-                    <name>bintray-plugins</name>
-                    <url>https://jcenter.bintray.com</url>
-                </pluginRepository>
-            </pluginRepositories>
-            <id>bintray</id>
-        </profile>
-    </profiles>
-    <activeProfiles>
-        <activeProfile>bintray</activeProfile>
-    </activeProfiles>
-</settings>
-````
-
-For Gradle, please use the following:
-````gradle
-repositories {
-    maven {
-        url  "https://jcenter.bintray.com" 
-    }
-}
 ````
 
 ---
