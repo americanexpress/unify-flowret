@@ -14,8 +14,8 @@
 
 package com.americanexpress.unify.flowret;
 
+import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.CONSTS_FLOWRET.DAO;
-import com.americanexpress.unify.jdocs.UnifyException;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;

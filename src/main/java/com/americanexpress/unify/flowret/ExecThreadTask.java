@@ -14,8 +14,8 @@
 
 package com.americanexpress.unify.flowret;
 
+import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.jdocs.Document;
-import com.americanexpress.unify.jdocs.UnifyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

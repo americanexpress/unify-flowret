@@ -14,7 +14,7 @@
 
 package com.americanexpress.unify.flowret;
 
-import com.americanexpress.unify.jdocs.UnifyException;
+import com.americanexpress.unify.base.UnifyException;
 
 /*
  * @author Deepak Arora

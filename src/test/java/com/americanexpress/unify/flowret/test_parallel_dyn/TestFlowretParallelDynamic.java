@@ -14,8 +14,8 @@
 
 package com.americanexpress.unify.flowret.test_parallel_dyn;
 
+import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.flowret.*;
-import com.americanexpress.unify.jdocs.BaseUtils;
 import org.junit.jupiter.api.*;
 
 import java.io.File;

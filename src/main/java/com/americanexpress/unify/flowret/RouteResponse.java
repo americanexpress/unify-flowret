@@ -14,7 +14,7 @@
 
 package com.americanexpress.unify.flowret;
 
-import com.americanexpress.unify.jdocs.ErrorTuple;
+import com.americanexpress.unify.base.ErrorTuple;
 
 import java.util.List;
 

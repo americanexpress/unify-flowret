@@ -14,9 +14,9 @@
 
 package com.americanexpress.unify.flowret;
 
-import com.americanexpress.unify.jdocs.BaseUtils;
+import com.americanexpress.unify.base.BaseUtils;
+import com.americanexpress.unify.base.ErrorTuple;
 import com.americanexpress.unify.jdocs.Document;
-import com.americanexpress.unify.jdocs.ErrorTuple;
 import com.americanexpress.unify.jdocs.JDocument;
 
 import java.time.Instant;

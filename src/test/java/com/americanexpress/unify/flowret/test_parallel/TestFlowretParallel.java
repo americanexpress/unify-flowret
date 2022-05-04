@@ -14,10 +14,10 @@
 
 package com.americanexpress.unify.flowret.test_parallel;
 
+import com.americanexpress.unify.base.BaseUtils;
+import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
 import com.americanexpress.unify.flowret.test_singular.TestFlowret;
-import com.americanexpress.unify.jdocs.BaseUtils;
-import com.americanexpress.unify.jdocs.UnifyException;
 import org.junit.jupiter.api.*;
 
 import java.io.File;

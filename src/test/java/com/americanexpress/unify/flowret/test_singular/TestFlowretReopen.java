@@ -14,9 +14,9 @@
 
 package com.americanexpress.unify.flowret.test_singular;
 
+import com.americanexpress.unify.base.BaseUtils;
+import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
-import com.americanexpress.unify.jdocs.BaseUtils;
-import com.americanexpress.unify.jdocs.UnifyException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;

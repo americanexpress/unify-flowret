@@ -14,8 +14,8 @@
 
 package com.americanexpress.unify.flowret.test_parallel_dyn;
 
+import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.flowret.*;
-import com.americanexpress.unify.jdocs.BaseUtils;
 
 import java.util.ArrayList;
 import java.util.List;

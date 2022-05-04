@@ -14,7 +14,7 @@
 
 package com.americanexpress.unify.flowret;
 
-import com.americanexpress.unify.jdocs.ErrorMap;
+import com.americanexpress.unify.base.ErrorMap;
 
 import java.util.Map;
 
