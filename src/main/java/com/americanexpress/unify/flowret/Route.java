@@ -31,12 +31,14 @@ public class Route extends Unit {
     super(name, type);
     this.branches = branches;
     this.componentName = componentName;
+    this.userData = userData;
   }
 
   protected Route(String name, String componentName, String userData, String next, UnitType type) {
     super(name, type);
     this.next = next;
     this.componentName = componentName;
+    this.userData = userData;
   }
 
   protected Branch getBranch(String name) {
