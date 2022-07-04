@@ -31,19 +31,20 @@ public class ProcessContext {
   private String execPathName = null;
   private String pendWorkBasket = null;
   private String lastPendWorkBasket = null;
+  private String lastPendStep = null;
   private ErrorTuple pendErrorTuple = new ErrorTuple(); // only valid for pend event
   private boolean isPendAtSameStep = false;
   private String ticketName = null;
 
   public ProcessContext(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName) {
-    init(journeyName, caseId, stepName, compName, userData, compType, processVariables, execPathName, null, null);
+    init(journeyName, caseId, stepName, compName, userData, compType, processVariables, execPathName, null, null, null);
   }
 
-  public ProcessContext(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName, String lastPendWorkBasket, Boolean isPendAtSameStep) {
-    init(journeyName, caseId, stepName, compName, userData, compType, processVariables, execPathName, lastPendWorkBasket, isPendAtSameStep);
+  public ProcessContext(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName, String lastPendWorkBasket, String lastPendStep, Boolean isPendAtSameStep) {
+    init(journeyName, caseId, stepName, compName, userData, compType, processVariables, execPathName, lastPendWorkBasket, lastPendStep, isPendAtSameStep);
   }
 
-  private void init(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName, String lastPendWorkBasket, Boolean isPendAtSameStep) {
+  private void init(String journeyName, String caseId, String stepName, String compName, String userData, UnitType compType, ProcessVariables processVariables, String execPathName, String lastPendWorkBasket, String lastPendStep, Boolean isPendAtSameStep) {
     this.journeyName = journeyName;
     this.caseId = caseId;
     this.stepName = stepName;
@@ -55,6 +56,7 @@ public class ProcessContext {
     }
     this.execPathName = execPathName;
     this.lastPendWorkBasket = lastPendWorkBasket;
+    this.lastPendStep = lastPendStep;
     if (isPendAtSameStep != null) {
       this.isPendAtSameStep = isPendAtSameStep;
     }
@@ -73,6 +75,10 @@ public class ProcessContext {
 
   public String getLastPendWorkBasket() {
     return lastPendWorkBasket;
+  }
+
+  public String getLastPendStep() {
+    return lastPendStep;
   }
 
   public String getExecPathName() {
@@ -151,6 +157,7 @@ public class ProcessContext {
         pc.compName = pd.getUnit(pc.stepName).getComponentName();
         pc.pendWorkBasket = pi.getPendWorkBasket();
         rts.lastPendWorkBasket = pc.pendWorkBasket;
+        rts.lastPendStep = pc.stepName;
         break;
 
       case ON_TICKET_RAISED:

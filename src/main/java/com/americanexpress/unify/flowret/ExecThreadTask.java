@@ -834,7 +834,7 @@ public class ExecThreadTask implements Runnable {
 
     try {
       ProcessComponentFactory factory = rts.factory;
-      pc = new ProcessContext(pd.getName(), pi.getCaseId(), step.getName(), step.getComponentName(), step.getUserData(), UnitType.STEP, pi.getProcessVariables(), execPath.getName(), rts.lastPendWorkBasket, pi.isPendAtSameStep);
+      pc = new ProcessContext(pd.getName(), pi.getCaseId(), step.getName(), step.getComponentName(), step.getUserData(), UnitType.STEP, pi.getProcessVariables(), execPath.getName(), rts.lastPendWorkBasket, rts.lastPendStep, pi.isPendAtSameStep);
       InvokableStep iStep = (InvokableStep)factory.getObject(pc);
       sr = iStep.executeStep();
     }

@@ -14,6 +14,7 @@
 
 package com.americanexpress.unify.flowret;
 
+import com.americanexpress.unify.base.BlockOnOfferQueue;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.CONSTS_FLOWRET.DAO;
 
@@ -80,7 +81,8 @@ public class Flowret {
     Flowret am = instance();
     am.maxThreads = maxThreads;
     am.idleTimeout = idleTimeout;
-    am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, new ArrayBlockingQueue<>(am.maxThreads * 2), new RejectedItemHandler());
+    BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue(new ArrayBlockingQueue<>(am.maxThreads * 2));
+    am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
     DAO.SEP = typeIdSep;
     ERRORS_FLOWRET.load();
   }

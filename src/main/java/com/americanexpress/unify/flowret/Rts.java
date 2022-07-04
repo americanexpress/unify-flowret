@@ -41,6 +41,7 @@ public final class Rts {
   protected ProcessInfo pi = null;
   protected ISlaQueueManager slaQm = null;
   protected String lastPendWorkBasket = null;
+  protected String lastPendStep = null;
 
   protected Rts(FlowretDao dao, ProcessComponentFactory factory, EventHandler eventHandler, ISlaQueueManager slaQm) {
     this.dao = dao;

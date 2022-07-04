@@ -1425,8 +1425,6 @@ be tested independently.
 
 ##### What next?
 
-Read the API documentation of Document class to get into API levels details.
-
 Go through the unit test cases in the source code. Unit test cases are available in the location `src/test`
 
 Provide us feedback. We would love to hear from you.
