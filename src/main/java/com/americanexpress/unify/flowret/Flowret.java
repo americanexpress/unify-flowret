@@ -15,6 +15,7 @@
 package com.americanexpress.unify.flowret;
 
 import com.americanexpress.unify.base.BlockOnOfferQueue;
+import com.americanexpress.unify.base.RejectedItemHandler;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.CONSTS_FLOWRET.DAO;
 

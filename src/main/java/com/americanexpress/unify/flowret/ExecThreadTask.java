@@ -14,6 +14,7 @@
 
 package com.americanexpress.unify.flowret;
 
+import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.jdocs.Document;
 import org.slf4j.Logger;
@@ -841,6 +842,7 @@ public class ExecThreadTask implements Runnable {
     catch (Exception e) {
       logger.error("Exception encountered while executing step. Case id -> {}, step_name -> {}, comp_name -> {}", pi.getCaseId(), pc.getStepName(), pc.getCompName());
       logger.error("Exception details -> {}", e.getMessage());
+      logger.error(BaseUtils.getStackTrace(e));
       sr = new StepResponse(UnitResponseType.ERROR_PEND, null, "flowret_error");
     }
 

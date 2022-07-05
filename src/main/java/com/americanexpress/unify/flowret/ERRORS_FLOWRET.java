@@ -41,6 +41,9 @@ public class ERRORS_FLOWRET extends ErrorMap {
     map.put("flowret_err_10", "A dynamic parallel route cannot have branches specified");
     map.put("flowret_err_11", "Journey file for case id {0} does not exist");
     map.put("flowret_err_12", "Case id {0} -> could not find an exec path to pend to. This application cannot be repaired");
+    map.put("flowret_err_13", "Case id {0} -> cannot reopen a case which has not yet completed");
+    map.put("flowret_err_14", "Case id {0} -> pend work basket cannot be null or empty");
+    map.put("flowret_err_15", "Case id {0} -> ticket cannot be null or empty");
   }
 
 }

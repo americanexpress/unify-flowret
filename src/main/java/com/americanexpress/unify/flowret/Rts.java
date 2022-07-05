@@ -79,6 +79,7 @@ public final class Rts {
         catch (Exception e) {
           // we log an error but we do not stop and the application has generated an error and we are not responsible for that
           logger.error("Error encountered while invoking event. Case id -> {}, event type -> {}, error message -> {}", pi.getCaseId(), event.name(), e.getMessage());
+          logger.error(BaseUtils.getStackTrace(e));
         }
         break;
 
