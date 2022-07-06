@@ -150,12 +150,16 @@ public class ProcessContext {
         pc.compType = pd.getUnit(pc.stepName).getType();
         pc.pendWorkBasket = pi.getPendWorkBasket();
         pc.pendErrorTuple = pi.getPendErrorTuple();
+        pc.lastPendWorkBasket = rts.lastPendWorkBasket;
+        pc.lastPendStep = rts.lastPendStep;
         break;
 
       case ON_PROCESS_RESUME:
         pc.stepName = pi.getExecPath(pi.getPendExecPath()).getStep();
         pc.compName = pd.getUnit(pc.stepName).getComponentName();
         pc.pendWorkBasket = pi.getPendWorkBasket();
+        pc.lastPendWorkBasket = rts.lastPendWorkBasket;
+        pc.lastPendStep = rts.lastPendStep;
         rts.lastPendWorkBasket = pc.pendWorkBasket;
         rts.lastPendStep = pc.stepName;
         break;

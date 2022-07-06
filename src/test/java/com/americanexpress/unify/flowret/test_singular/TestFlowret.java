@@ -157,6 +157,24 @@ public class TestFlowret {
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
   }
 
+  // pend scenario to check last pend work basket feature
+  public static void setScenario5() {
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND, "comp3_wb", "");
+    StepResponseFactory.addResponse("step11", UnitResponseType.OK_PEND, "comp11_wb", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "tech", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "tech", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "tech", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "tech", "");
+    StepResponseFactory.addResponse("step13", UnitResponseType.ERROR_PEND, "tech", "");
+    StepResponseFactory.addResponse("step14", UnitResponseType.ERROR_PEND, "comp14_wb", "");
+
+    List<String> branches = new ArrayList<>();
+    branches.add("yes");
+    RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
+    RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
+    RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
+  }
+
   private void myAssertEquals(String testCase, String resourcePath) {
     String s = newConsole.toString();
     String output = BaseUtils.getWithoutCarriageReturn(s);
@@ -243,6 +261,14 @@ public class TestFlowret {
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
     runJourney("test_journey");
     myAssertEquals("testScenario4WithSla", "/flowret/test_singular/test_scenario_4_sla_expected.txt");
+  }
+
+  @Test
+  void testScenario5() {
+    setScenario5();
+    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey");
+    // myAssertEquals("testScenario5", "/flowret/test_singular/test_scenario_1_expected.txt");
   }
 
   @Test

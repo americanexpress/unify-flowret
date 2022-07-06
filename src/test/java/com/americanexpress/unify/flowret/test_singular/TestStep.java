@@ -12,7 +12,13 @@
  * the License.
  */
 
-package com.americanexpress.unify.flowret;
+package com.americanexpress.unify.flowret.test_singular;
+
+import com.americanexpress.unify.base.BaseUtils;
+import com.americanexpress.unify.flowret.InvokableStep;
+import com.americanexpress.unify.flowret.ProcessContext;
+import com.americanexpress.unify.flowret.StepResponse;
+import com.americanexpress.unify.flowret.StepResponseFactory;
 
 /*
  * @author Deepak Arora
@@ -33,7 +39,7 @@ public class TestStep implements InvokableStep {
 
   public StepResponse executeStep() {
     String stepName = pc.getStepName();
-    if (stepName.equals("step13")) {
+    if (BaseUtils.compareWithMany(stepName, "step13")) {
       // only there to set a break point
       int i = 0;
     }
