@@ -1,0 +1,48 @@
+{
+  "milestones": [
+    {
+      "jdocs_arr_pk": "{\"field\":\"name\"}",
+      "name": "{\"type\":\"string\", \"regex\":\"^(\\\\w+)$\"}",
+      // possible values can be "case_start" or "case_restart" or "work_basket_entry" or "work_basket_exit"
+      "setup_on": "{\"type\":\"string\", \"regex\":\"^(case_start|case_restart|work_basket_entry|work_basket_exit)$\"}",
+      // possible values can be "case_level" or "work_basket"
+      // "case_level" means that it is a case level sla and the reference point is the case start timestamp
+      // "work_basket" means that it is a work basket level sla and the reference point is when the application entered the work basket
+      "type": "{\"type\":\"string\", \"regex\":\"^(case_level|work_basket)$\"}",
+      "work_basket_name": "{\"type\":\"string\", \"regex\":\"^([a-zA-Z][a-zA-Z0-9_]*)$\"}",
+      // specifies the age at which the milestone is to be executed. Specifed as a number followed by an "m" or a "d"
+      // example is "5m" meaning 5 minutes or 10d meaning 10 days
+      "applied_at_age": "{\"type\":\"string\", \"regex\":\"^((\\\\d)+(d|h|m):*)+(?<!:)$\"}",
+      // specifies the milestone trigger time stamp explicitly as part of configuration. You can either provide the timestamp as is or it could be a json path. If it is a json path then the value will be read from application
+      "applied_at_ts": "{\"type\":\"string\", \"regex\":\"^((\\\\$.[a-zA-Z\\\\[\\\\]0-9=._%]*)|(2[0-9]{3}-(Jan|Feb|Mar|Apr|May|June|July|Aug|Sep|Oct|Nov|Dec)-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9].[0-9]{3}( UTC)))$\"}",
+      // fallow the business calender days or not
+      "follow_business_calendar": "{\"type\":\"boolean\"}",
+      // specifies when the clock start to compute the execution time. Values can be "immediately" or "next_day"
+      // "immediately" means from the reference point applicable whereas "next_day" means from the close of the
+      // current day. For example, for a case which started at 1:15 PM and has a 3d age and clock starts as next day,
+      // the 3 days will be computed from the end of the current day and not from 1:15 PM on that day
+      "clock_starts": "{\"type\":\"string\", \"regex\":\"^(immediately|next_day)$\"}",
+      // this is an application specific string which is passed as it is to the application
+      "action": "{\"type\":\"string\", \"regex\":\"^(CORR|CORR:([a-zA-Z_]+)|CORR_ALL|RESUME|RETRY|CANCEL:([a-zA-Z0-9]+)|CANCEL:([a-zA-Z0-9]+):(C|D)|DECLINE:([a-zA-Z0-9]+)|CHG_WB:([a-zA-Z][a-zA-Z0-9_]*)|RAISE_INC:([a-zA-Z0-9_]*)|CUSTOM:(([a-zA-Z][a-zA-Z0-9_]*)|(([a-zA-Z][a-zA-Z0-9_]*(.))+([a-zA-Z][a-zA-Z0-9_]*)))|CUSTOM:(([a-zA-Z][a-zA-Z0-9_]*)|(([a-zA-Z][a-zA-Z0-9_]*(.))+([a-zA-Z][a-zA-Z0-9_]*))):([a-zA-Z0-9]+))$\"}",
+      // this is also an application specific string which is passed as it is to the application
+      "user_data": "{\"type\":\"string\"}",
+      // To specify the further milestones
+      "further_milestones": [
+        {
+          // specifies the milestone trigger time stamp explicitly as part of configuration. You can either provide the timestamp as is or it could be a json path. If it is a json path then the value will be read from application
+          // REPEAT/OFFSET combination not allowed with applied_at_ts, it will be ignored  even if it is provieded.
+          "applied_at_ts": "{\"type\":\"string\", \"regex\":\"^((\\\\$.[a-zA-Z\\\\[\\\\]0-9=._%]*)|(2[0-9]{3}-(Jan|Feb|Mar|Apr|May|June|July|Aug|Sep|Oct|Nov|Dec)-(0[1-9]|[1-2][0-9]|3[0-1]) (2[0-3]|[0-1][0-9]):[0-5][0-9]:[0-5][0-9].[0-9]{3}( UTC)))$\"}",
+          // means the interval for repetition i.e. if the repeat field is there
+          "applied_at_age": "{\"type\":\"string\"}",
+          // Optional field of further_milestones block, If it is available then it will be applied on the number of times further_milestones should execute.
+          //Only one occurrence of repeat attribute is allowed.
+          //Note: This field should be either given at 0th or nth block of further_milestones.
+          "repeat": "{\"type\":\"integer\", \"regex\":\"^(-1|[1-9][0-9]*)$\"}",
+          // Optional field of further_milestones block, should be specified if and only if repeat field available.
+          // If it is available then the further_milestones interval will be calculated using offset value instead of initial milestone age
+          "offset": "{\"type\":\"string\", \"regex\":\"^((\\\\d)+(d|h|m):*)+(?<!:)$\"}"
+        }
+      ]
+    }
+  ]
+}

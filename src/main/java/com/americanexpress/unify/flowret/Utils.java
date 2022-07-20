@@ -22,10 +22,7 @@ import com.americanexpress.unify.jdocs.JDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /*
  * @author Deepak Arora
@@ -655,6 +652,84 @@ public class Utils {
     }
 
     dao.write(key, d);
+  }
+
+  public static void validateJourneyDefinition(String journeyDefn) {
+    Document jd = new JDocument(journeyDefn);
+    validateJourneyDefinition(jd);
+  }
+
+  public static void validateJourneyDefinition(Document jd) {
+    // we will check the following:
+    // check against the model
+    // check that each step name is unique
+    // check that next of each step points to a valid step
+    // check that branch names are unique
+    // check that each branch points to a valid step
+
+    String journeyName = jd.getString("$.journey.name");
+
+    // validate against model
+    if (jd.isTyped() == true) {
+      if (jd.getType().equals("flowret_journey") == false) {
+        jd.validate("flowret_journey");
+      }
+      else {
+        // nothing to do as it must already be validated
+      }
+    }
+    else {
+      jd.validate("flowret_journey");
+    }
+
+    // build a set of steps and validate if any is repeated
+    Set<String> steps = new HashSet<>();
+    for (int i = 0; i < jd.getArraySize("$.journey.flow[]"); i++) {
+      String stepName = jd.getString("$.journey.flow[%].name", i + "");
+      if (steps.contains(stepName) == true) {
+        throw new UnifyException("flowret_err_16", journeyName, stepName);
+      }
+      steps.add(stepName);
+    }
+    if (steps.contains("end") == true) {
+      throw new UnifyException("flowret_err_19", journeyName);
+    }
+    steps.add("end"); // this is required for later
+
+    // check that the next of each step points to a valid step
+    for (int i = 0; i < jd.getArraySize("$.journey.flow[]"); i++) {
+      String stepName = jd.getString("$.journey.flow[%].name", i + "");
+      String nextName = jd.getString("$.journey.flow[%].next", i + "");
+      if (nextName == null) {
+        continue;
+      }
+      if (steps.contains(nextName) == false) {
+        throw new UnifyException("flowret_err_20", journeyName, stepName, nextName);
+      }
+    }
+
+    // check that branch names are unique and point to valid steps
+    for (int i = 0; i < jd.getArraySize("$.journey.flow[]"); i++) {
+      if (jd.pathExists("$.journey.flow[%].branches[]", i + "") == false) {
+        continue;
+      }
+      String stepName = jd.getString("$.journey.flow[%].name", i + "");
+      Set<String> branchNames = new HashSet<>();
+      for (int j = 0; j < jd.getArraySize("$.journey.flow[%].branches[]", i + ""); j++) {
+        // check for branch name uniqueness
+        String branchName = jd.getString("$.journey.flow[%].branches[%].name", i + "", j + "");
+        if (steps.contains(branchName) == true) {
+          throw new UnifyException("flowret_err_17", journeyName, stepName, branchName);
+        }
+        branchNames.add(branchName);
+
+        // check next pointing
+        String nextName = jd.getString("$.journey.flow[%].branches[%].next", i + "", j + "");
+        if (steps.contains(nextName) == false) {
+          throw new UnifyException("flowret_err_18", journeyName, stepName, branchName, nextName);
+        }
+      }
+    }
   }
 
 }

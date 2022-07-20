@@ -14,10 +14,12 @@
 
 package com.americanexpress.unify.flowret;
 
+import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.base.BlockOnOfferQueue;
 import com.americanexpress.unify.base.RejectedItemHandler;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.CONSTS_FLOWRET.DAO;
+import com.americanexpress.unify.jdocs.JDocument;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -86,6 +88,10 @@ public class Flowret {
     am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
     DAO.SEP = typeIdSep;
     ERRORS_FLOWRET.load();
+    String json = BaseUtils.getResourceAsString(Utils.class, "/flowret/models/flowret_journey.json");
+    JDocument.loadDocumentModel("flowret_journey", json);
+    json = BaseUtils.getResourceAsString(Utils.class, "/flowret/models/flowret_journey_sla.json");
+    JDocument.loadDocumentModel("flowret_journey_sla", json);
   }
 
   /**

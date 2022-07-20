@@ -44,6 +44,11 @@ public class ERRORS_FLOWRET extends ErrorMap {
     map.put("flowret_err_13", "Case id {0} -> cannot reopen a case which has not yet completed");
     map.put("flowret_err_14", "Case id {0} -> pend work basket cannot be null or empty");
     map.put("flowret_err_15", "Case id {0} -> ticket cannot be null or empty");
+    map.put("flowret_err_16", "More than one occurrence(s) of a step name found. Journey name -> {0}, step name -> {1}");
+    map.put("flowret_err_17", "More than one occurrence(s) of a name in a branch found. Journey name -> {0}, step name -> {1}, branch name -> {2}");
+    map.put("flowret_err_18", "Next step name specified in branch does not exist. Journey name -> {0}, step name -> {1}, branch name -> {2}, next name -> {3}");
+    map.put("flowret_err_19", "Step name cannot be end. Journey name -> {0}");
+    map.put("flowret_err_20", "Next step name specified in a step is not defined. Journey name -> {0}, step name -> {1}, next name -> {2}");
   }
 
 }
