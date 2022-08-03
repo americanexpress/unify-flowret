@@ -1,0 +1,41 @@
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, successfully created case
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_START, comp name -> , work basket -> 
+Received event -> ON_PROCESS_START, isPendAtSameStep -> false
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> start, component -> start, execution path -> .
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_1, component -> step_1_comp, execution path -> .
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing parallel routing rule -> route_1, execution path -> .
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_2_1, component -> step_2_1_comp, execution path -> .route_1.1.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_2_2, component -> step_2_2_comp, execution path -> .route_1.2.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, pending at step -> step_2_1, component -> step_2_1_comp, execution path -> .route_1.1.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, pending at step -> step_2_2, component -> step_2_2_comp, execution path -> .route_1.2.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_2_3, component -> step_2_3_comp, execution path -> .route_1.3.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, pending at step -> step_2_3, component -> step_2_3_comp, execution path -> .route_1.3.
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_PEND, comp name -> step_2_1_comp, work basket -> error_wb
+Received event -> ON_PROCESS_PEND, isPendAtSameStep -> false
+Pend workbasket -> error_wb
+
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_RESUME, comp name -> step_2_1_comp, work basket -> error_wb
+Received event -> ON_PROCESS_RESUME, isPendAtSameStep -> true
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_2_1, component -> step_2_1_comp, execution path -> .route_1.1.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, handling join for execution path -> .route_1.1.
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_PEND, comp name -> step_2_2_comp, work basket -> error_wb
+Received event -> ON_PROCESS_PEND, isPendAtSameStep -> false
+Pend workbasket -> error_wb
+
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_RESUME, comp name -> step_2_2_comp, work basket -> error_wb
+Received event -> ON_PROCESS_RESUME, isPendAtSameStep -> true
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_2_2, component -> step_2_2_comp, execution path -> .route_1.2.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, handling join for execution path -> .route_1.2.
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_PEND, comp name -> step_2_3_comp, work basket -> error_wb
+Received event -> ON_PROCESS_PEND, isPendAtSameStep -> false
+Pend workbasket -> error_wb
+
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_RESUME, comp name -> step_2_3_comp, work basket -> error_wb
+Received event -> ON_PROCESS_RESUME, isPendAtSameStep -> true
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_2_3, component -> step_2_3_comp, execution path -> .route_1.3.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, handling join for execution path -> .route_1.3.
+[com.aexp.acq.unify.flowret.ExecThreadTask         ] INFO : Case id -> 1, executing step -> step_3, component -> step_3_comp, execution path -> .
+[com.aexp.acq.unify.flowret.Rts                    ] INFO : Case id -> 1, raising event -> ON_PROCESS_COMPLETE, comp name -> , work basket -> 
+Received event -> ON_PROCESS_COMPLETE, isPendAtSameStep -> false
+
+Exception -> Cannot resume a case that has already completed. Case id -> 1

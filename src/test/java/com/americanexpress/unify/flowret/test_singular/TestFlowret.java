@@ -184,6 +184,7 @@ public class TestFlowret {
     previousConsole.println();
     previousConsole.println();
     previousConsole.println("*********************** " + testCase + " ***********************");
+    previousConsole.println();
     previousConsole.println(s);
   }
 

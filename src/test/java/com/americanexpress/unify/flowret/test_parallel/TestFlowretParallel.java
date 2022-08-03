@@ -20,7 +20,11 @@ import com.americanexpress.unify.flowret.*;
 import com.americanexpress.unify.flowret.test_singular.TestFlowret;
 import org.junit.jupiter.api.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /*
  * @author Deepak Arora
@@ -33,9 +37,29 @@ public class TestFlowretParallel {
   private static FileDao dao = null;
   private static ProcessComponentFactory factory = null;
   private static EventHandler handler = null;
+  private static PrintStream previousConsole = null;
+  private static ByteArrayOutputStream newConsole = null;
+
+  private void myAssertEquals(String testCase, String resourcePath) {
+    String output = newConsole.toString();
+    String s = output;
+    output = com.aexp.acq.unify.flowret.TestUtils.getSortedWithoutCrLf(output);
+    String expected = BaseUtils.getResourceAsString(TestFlowret.class, resourcePath);
+    expected = com.aexp.acq.unify.flowret.TestUtils.getSortedWithoutCrLf(expected);
+    assertEquals(expected, output);
+    previousConsole.println();
+    previousConsole.println();
+    previousConsole.println("*********************** " + testCase + " ***********************");
+    previousConsole.println();
+    previousConsole.println(s);
+  }
 
   @BeforeAll
   protected static void setEnv() throws Exception {
+    previousConsole = System.out;
+    newConsole = new ByteArrayOutputStream();
+    System.setOut(new PrintStream(newConsole));
+
     File directory = new File(dirPath);
     if (!directory.exists()) {
       directory.mkdir();
@@ -49,6 +73,7 @@ public class TestFlowretParallel {
   protected void beforeEach() {
     com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
+    newConsole.reset();
   }
 
   @AfterEach
@@ -58,6 +83,7 @@ public class TestFlowretParallel {
 
   @AfterAll
   protected static void afterAll() {
+    System.setOut(previousConsole);
     Flowret.instance().close();
     com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
   }
@@ -112,7 +138,7 @@ public class TestFlowretParallel {
     StepResponseFactory.addResponse("step_2_2", UnitResponseType.OK_PEND, "test_wb", "");
     StepResponseFactory.addResponse("step_2_2", UnitResponseType.OK_PROCEED, "", "");
 
-    StepResponseFactory.addResponse("step_2_3", UnitResponseType.OK_PEND, "", "reject");
+    StepResponseFactory.addResponse("step_2_3", UnitResponseType.OK_PEND, "test_wb", "reject", 1000);
 
     StepResponseFactory.addResponse("step_4", UnitResponseType.OK_PEND, "test_wb", "");
     StepResponseFactory.addResponse("step_4", UnitResponseType.OK_PROCEED, "", "");
@@ -126,16 +152,9 @@ public class TestFlowretParallel {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
     String slaJson = null;
 
-    try {
       slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
-    }
-    catch (Exception e) {
-      // nothing to do
-    }
-
-    ProcessContext pc = null;
     if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
-      pc = rts.startCase("1", json, null, slaJson);
+      rts.startCase("1", json, null, slaJson);
     }
 
     try {
@@ -154,6 +173,7 @@ public class TestFlowretParallel {
     setScenario1();
     init(new FileDao(dirPath), new TestComponentFactoryParallel(), new TestHandler(), null);
     runJourney("parallel_test");
+    myAssertEquals("testScenario1", "/flowret/test_parallel/test_scenario_1_expected.txt");
   }
 
   @Test
@@ -161,6 +181,7 @@ public class TestFlowretParallel {
     setScenario2();
     init(new FileDao(dirPath), new TestComponentFactoryParallel(), new TestHandler(), null);
     runJourney("parallel_test");
+    myAssertEquals("testScenario2", "/flowret/test_parallel/test_scenario_2_expected.txt");
   }
 
   @Test
@@ -168,6 +189,7 @@ public class TestFlowretParallel {
     setScenario2_1();
     init(new FileDao(dirPath), new TestComponentFactoryParallel(), new TestHandler(), null);
     runJourney("parallel_test");
+    myAssertEquals("testScenario2_1", "/flowret/test_parallel/test_scenario_2_1_expected.txt");
   }
 
   @Test
@@ -175,6 +197,7 @@ public class TestFlowretParallel {
     setScenario3();
     init(new FileDao(dirPath), new TestComponentFactoryParallel(), new TestHandler(), null);
     runJourney("parallel_test");
+    myAssertEquals("testScenario3", "/flowret/test_parallel/test_scenario_3_expected.txt");
   }
 
   @Test
@@ -182,6 +205,7 @@ public class TestFlowretParallel {
     setScenario4();
     init(new FileDao(dirPath), new TestComponentFactoryParallel(), new TestHandler(), null);
     runJourney("parallel_test");
+    myAssertEquals("testScenario4", "/flowret/test_parallel/test_scenario_4_expected.txt");
   }
 
 }

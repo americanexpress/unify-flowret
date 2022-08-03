@@ -15,10 +15,7 @@
 package com.americanexpress.unify.flowret.test_singular;
 
 import com.americanexpress.unify.base.BaseUtils;
-import com.americanexpress.unify.flowret.InvokableStep;
-import com.americanexpress.unify.flowret.ProcessContext;
-import com.americanexpress.unify.flowret.StepResponse;
-import com.americanexpress.unify.flowret.StepResponseFactory;
+import com.americanexpress.unify.flowret.*;
 
 /*
  * @author Deepak Arora
@@ -43,7 +40,13 @@ public class TestStep implements InvokableStep {
       // only there to set a break point
       int i = 0;
     }
-    StepResponse sr = StepResponseFactory.getResponse(stepName);
+
+    TestStepResponse tsr = StepResponseFactory.getResponse(stepName);
+    StepResponse sr = tsr.getStepResponse();
+    long delay = tsr.getDelay();
+    if (delay > 0) {
+      BaseUtils.sleep(delay);
+    }
     return sr;
   }
 

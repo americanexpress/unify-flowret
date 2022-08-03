@@ -20,10 +20,7 @@ import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.JDocument;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -53,7 +50,7 @@ public class ProcessInfo {
   private volatile String pendExecPath = "";
 
   // variables which are thread specific
-  private Map<String, ExecPath> execPaths = new TreeMap<>();
+  private Map<String, ExecPath> execPaths = Collections.synchronizedSortedMap(new TreeMap<>());
 
   // this variable is populated while writing and is for trouble shooting and information only
   // this variable is not used while reading the document
@@ -163,8 +160,10 @@ public class ProcessInfo {
   }
 
   protected List<ExecPath> getExecPaths() {
-    List<ExecPath> list = execPaths.values().stream().collect(Collectors.toList());
-    return list;
+    synchronized (execPaths) {
+      List<ExecPath> list = execPaths.values().stream().collect(Collectors.toList());
+      return list;
+    }
   }
 
   protected void setExecPath(ExecPath ep) {
@@ -205,9 +204,11 @@ public class ProcessInfo {
   }
 
   protected void clearPendWorkBaskets() {
-    List<ExecPath> paths = new ArrayList<>(execPaths.values());
-    for (ExecPath path : paths) {
-      path.setPendWorkBasket("");
+    synchronized (execPaths) {
+      List<ExecPath> paths = new ArrayList<>(execPaths.values());
+      for (ExecPath path : paths) {
+        path.setPendWorkBasket("");
+      }
     }
   }
 
@@ -244,43 +245,45 @@ public class ProcessInfo {
 
     // write execution paths
     i = 0;
-    for (ExecPath path : execPaths.values()) {
-      d.setString("$.process_info.exec_paths[%].name", path.getName(), i + "");
-      d.setString("$.process_info.exec_paths[%].status", path.getStatus().toString().toLowerCase(), i + "");
+    synchronized (execPaths) {
+      for (ExecPath path : execPaths.values()) {
+        d.setString("$.process_info.exec_paths[%].name", path.getName(), i + "");
+        d.setString("$.process_info.exec_paths[%].status", path.getStatus().toString().toLowerCase(), i + "");
 
-      String s = path.getStep();
-      d.setString("$.process_info.exec_paths[%].step", s, i + "");
+        String s = path.getStep();
+        d.setString("$.process_info.exec_paths[%].step", s, i + "");
 
-      if (s.equals("end")) {
-        d.setString("$.process_info.exec_paths[%].comp_name", s, i + "");
+        if (s.equals("end")) {
+          d.setString("$.process_info.exec_paths[%].comp_name", s, i + "");
+        }
+        else {
+          s = pd.getUnit(s).getComponentName();
+          d.setString("$.process_info.exec_paths[%].comp_name", s, i + "");
+        }
+
+        s = path.getPendWorkBasket();
+        d.setString("$.process_info.exec_paths[%].pend_workbasket", s, i + "");
+
+        s = path.getTicket();
+        d.setString("$.process_info.exec_paths[%].ticket", s, i + "");
+
+        ErrorTuple et = path.getPendErrorTuple();
+        d.setString("$.process_info.exec_paths[%].pend_error.code", et.getErrorCode(), i + "");
+        d.setString("$.process_info.exec_paths[%].pend_error.message", et.getErrorMessage(), i + "");
+        d.setString("$.process_info.exec_paths[%].pend_error.details", et.getErrorMessage(), i + "");
+        d.setBoolean("$.process_info.exec_paths[%].pend_error.is_retyable", et.isRetryable(), i + "");
+
+        s = path.getPrevPendWorkBasket();
+        d.setString("$.process_info.exec_paths[%].prev_pend_workbasket", s, i + "");
+
+        s = path.getTbcSlaWorkBasket();
+        d.setString("$.process_info.exec_paths[%].tbc_sla_workbasket", s, i + "");
+
+        if (path.getUnitResponseType() != null) {
+          d.setString("$.process_info.exec_paths[%].unit_response_type", path.getUnitResponseType().toString().toLowerCase(), i + "");
+        }
+        i++;
       }
-      else {
-        s = pd.getUnit(s).getComponentName();
-        d.setString("$.process_info.exec_paths[%].comp_name", s, i + "");
-      }
-
-      s = path.getPendWorkBasket();
-      d.setString("$.process_info.exec_paths[%].pend_workbasket", s, i + "");
-
-      s = path.getTicket();
-      d.setString("$.process_info.exec_paths[%].ticket", s, i + "");
-
-      ErrorTuple et = path.getPendErrorTuple();
-      d.setString("$.process_info.exec_paths[%].pend_error.code", et.getErrorCode(), i + "");
-      d.setString("$.process_info.exec_paths[%].pend_error.message", et.getErrorMessage(), i + "");
-      d.setString("$.process_info.exec_paths[%].pend_error.details", et.getErrorMessage(), i + "");
-      d.setBoolean("$.process_info.exec_paths[%].pend_error.is_retyable", et.isRetryable(), i + "");
-
-      s = path.getPrevPendWorkBasket();
-      d.setString("$.process_info.exec_paths[%].prev_pend_workbasket", s, i + "");
-
-      s = path.getTbcSlaWorkBasket();
-      d.setString("$.process_info.exec_paths[%].tbc_sla_workbasket", s, i + "");
-
-      if (path.getUnitResponseType() != null) {
-        d.setString("$.process_info.exec_paths[%].unit_response_type", path.getUnitResponseType().toString().toLowerCase(), i + "");
-      }
-      i++;
     }
 
     // write ticket info

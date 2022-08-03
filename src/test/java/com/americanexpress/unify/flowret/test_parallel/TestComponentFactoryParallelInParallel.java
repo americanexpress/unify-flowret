@@ -14,37 +14,27 @@
 
 package com.americanexpress.unify.flowret.test_parallel;
 
-import com.americanexpress.unify.base.BaseUtils;
-import com.americanexpress.unify.flowret.*;
+import com.americanexpress.unify.flowret.ProcessComponentFactory;
+import com.americanexpress.unify.flowret.ProcessContext;
+import com.americanexpress.unify.flowret.UnitType;
 
 /*
  * @author Deepak Arora
  */
-public class TestStepParallel implements InvokableStep {
+public class TestComponentFactoryParallelInParallel implements ProcessComponentFactory {
 
-  private String name = null;
-  private ProcessContext pc = null;
+  @Override
+  public Object getObject(ProcessContext pc) {
+    Object o = null;
 
-  public TestStepParallel(ProcessContext pc) {
-    this.name = pc.getCompName();
-    this.pc = pc;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public StepResponse executeStep() {
-    String stepName = pc.getStepName();
-
-    TestStepResponse tsr = StepResponseFactory.getResponse(stepName);
-    StepResponse sr = tsr.getStepResponse();
-    long delay = tsr.getDelay();
-    if (delay > 0) {
-      BaseUtils.sleep(delay);
+    if ((pc.getCompType() == UnitType.S_ROUTE) || (pc.getCompType() == UnitType.P_ROUTE) || (pc.getCompType() == UnitType.P_ROUTE_DYNAMIC)) {
+      o = new TestRuleParallelInParallel(pc);
     }
-    return sr;
+    else if (pc.getCompType() == UnitType.STEP) {
+      o = new TestStepParallelInParallel(pc);
+    }
+
+    return o;
   }
 
 }
-

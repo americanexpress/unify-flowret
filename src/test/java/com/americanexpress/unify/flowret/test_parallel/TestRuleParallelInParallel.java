@@ -14,18 +14,23 @@
 
 package com.americanexpress.unify.flowret.test_parallel;
 
-import com.americanexpress.unify.base.BaseUtils;
-import com.americanexpress.unify.flowret.*;
+import com.americanexpress.unify.flowret.InvokableRoute;
+import com.americanexpress.unify.flowret.ProcessContext;
+import com.americanexpress.unify.flowret.RouteResponse;
+import com.americanexpress.unify.flowret.UnitResponseType;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /*
  * @author Deepak Arora
  */
-public class TestStepParallel1 implements InvokableStep {
+public class TestRuleParallelInParallel implements InvokableRoute {
 
   private String name = null;
   private ProcessContext pc = null;
 
-  public TestStepParallel1(ProcessContext pc) {
+  public TestRuleParallelInParallel(ProcessContext pc) {
     this.name = pc.getCompName();
     this.pc = pc;
   }
@@ -34,25 +39,22 @@ public class TestStepParallel1 implements InvokableStep {
     return name;
   }
 
-  public StepResponse executeStep() {
+  public RouteResponse executeRoute() {
+    List<String> branches = new ArrayList<>();
+    RouteResponse resp = null;
     String stepName = pc.getStepName();
-    if (stepName.equals("step_wait_1") || stepName.equals("step_wait_2") || stepName.equals("step_wait_3")) {
-      try {
-        Thread.sleep(10000);
-      }
-      catch (InterruptedException e) {
-        e.printStackTrace();
-      }
+
+    if ((stepName.equalsIgnoreCase("route_1")
+            || (stepName.equalsIgnoreCase("route_b1_1"))
+            || (stepName.equalsIgnoreCase("route_b2_1"))
+            || (stepName.equalsIgnoreCase("route_b3_1")))) {
+      branches.add("1");
+      branches.add("2");
+      branches.add("3");
+      resp = new RouteResponse(UnitResponseType.OK_PROCEED, branches, null);
     }
 
-    TestStepResponse tsr = StepResponseFactory.getResponse(stepName);
-    StepResponse sr = tsr.getStepResponse();
-    long delay = tsr.getDelay();
-    if (delay > 0) {
-      BaseUtils.sleep(delay);
-    }
-    return sr;
+    return resp;
   }
 
 }
-

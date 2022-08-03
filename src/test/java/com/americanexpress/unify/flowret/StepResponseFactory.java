@@ -25,8 +25,17 @@ import java.util.Queue;
 public class StepResponseFactory {
 
   private static Map<String, Queue<StepResponse>> actions = new HashMap<>();
+  private static Map<String, Queue<Long>> delays = new HashMap<>();
 
   public synchronized static void addResponse(String stepName, UnitResponseType urt, String wb, String ticket) {
+    add(stepName, urt, wb, ticket, 0);
+  }
+
+  public synchronized static void addResponse(String stepName, UnitResponseType urt, String wb, String ticket, long delayInMs) {
+    add(stepName, urt, wb, ticket, delayInMs);
+  }
+
+  private static void add(String stepName, UnitResponseType urt, String wb, String ticket, long delayInMs) {
     StepResponse r = new StepResponse(urt, ticket, wb);
     Queue<StepResponse> q = actions.get(stepName);
     if (q == null) {
@@ -34,9 +43,17 @@ public class StepResponseFactory {
       actions.put(stepName, q);
     }
     q.add(r);
+
+    // put the delay
+    Queue<Long> q1 = delays.get(stepName);
+    if (q1 == null) {
+      q1 = new LinkedList<>();
+      delays.put(stepName, q1);
+    }
+    q1.add(delayInMs);
   }
 
-  public synchronized static StepResponse getResponse(String stepName) {
+  public synchronized static TestStepResponse getResponse(String stepName) {
     StepResponse r = new StepResponse(UnitResponseType.OK_PROCEED, "", "");
     Queue<StepResponse> q = actions.get(stepName);
     if (q != null) {
@@ -50,11 +67,20 @@ public class StepResponseFactory {
       int i = 0;
     }
 
-    return r;
+    long delay = 0;
+    Queue<Long> q1 = delays.get(stepName);
+    if (q1 != null) {
+      if (q1.size() > 0) {
+        delay = q1.remove();
+      }
+    }
+
+    return new TestStepResponse(r, delay);
   }
 
   public synchronized static void clear() {
     actions.clear();
+    delays.clear();
   }
 
 }

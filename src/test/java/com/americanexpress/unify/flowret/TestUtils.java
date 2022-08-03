@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
 public class TestUtils {
 
@@ -32,6 +33,18 @@ public class TestUtils {
     catch (IOException e) {
       e.printStackTrace();
     }
+  }
+
+  public static String getSortedWithoutCrLf(String s) {
+    s = s.replaceAll("\r\n", "\n");
+    String[] lines = s.split("\n");
+    Arrays.sort(lines);
+    s = "";
+    for (String line : lines) {
+      line = line.trim();
+      s = s + line;
+    }
+    return s;
   }
 
 }

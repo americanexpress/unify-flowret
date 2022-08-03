@@ -20,12 +20,12 @@ import com.americanexpress.unify.flowret.*;
 /*
  * @author Deepak Arora
  */
-public class TestStepParallel1 implements InvokableStep {
+public class TestStepParallelInParallel implements InvokableStep {
 
   private String name = null;
   private ProcessContext pc = null;
 
-  public TestStepParallel1(ProcessContext pc) {
+  public TestStepParallelInParallel(ProcessContext pc) {
     this.name = pc.getCompName();
     this.pc = pc;
   }
@@ -36,15 +36,6 @@ public class TestStepParallel1 implements InvokableStep {
 
   public StepResponse executeStep() {
     String stepName = pc.getStepName();
-    if (stepName.equals("step_wait_1") || stepName.equals("step_wait_2") || stepName.equals("step_wait_3")) {
-      try {
-        Thread.sleep(10000);
-      }
-      catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-
     TestStepResponse tsr = StepResponseFactory.getResponse(stepName);
     StepResponse sr = tsr.getStepResponse();
     long delay = tsr.getDelay();

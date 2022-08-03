@@ -1,0 +1,200 @@
+{
+  "journey": {
+    "name": "parallel_in_parallel",
+    "process_variables": [
+      {
+        "name": "id",
+        "type": "string",
+        "value": "id1"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "start",
+        "next": "step_1"
+      },
+      {
+        "name": "step_1",
+        "component": "step_1_comp",
+        "next": "route_1"
+      },
+      {
+        "name": "route_1",
+        "type": "p_route",
+        "component": "route_1_comp",
+        "branches": [
+          {
+            "name": "1",
+            "next": "step_b1_1"
+          },
+          {
+            "name": "2",
+            "next": "step_b2_1"
+          },
+          {
+            "name": "3",
+            "next": "step_b3_1"
+          }
+        ]
+      },
+      {
+        "name": "step_b1_1",
+        "component": "step_b1_1_comp",
+        "next": "route_b1_1"
+      },
+      {
+        "name": "step_b2_1",
+        "component": "step_b2_1_comp",
+        "next": "route_b2_1"
+      },
+      {
+        "name": "step_b3_1",
+        "component": "step_b3_1_comp",
+        "next": "route_b3_1"
+      },
+      {
+        "name": "route_b1_1",
+        "type": "p_route",
+        "component": "route_b1_1_comp",
+        "branches": [
+          {
+            "name": "1",
+            "next": "step_b1_b1_1"
+          },
+          {
+            "name": "2",
+            "next": "step_b1_b2_1"
+          },
+          {
+            "name": "3",
+            "next": "step_b1_b3_1"
+          }
+        ]
+      },
+      {
+        "name": "route_b2_1",
+        "type": "p_route",
+        "component": "route_b2_1_comp",
+        "branches": [
+          {
+            "name": "1",
+            "next": "step_b2_b1_1"
+          },
+          {
+            "name": "2",
+            "next": "step_b2_b2_1"
+          },
+          {
+            "name": "3",
+            "next": "step_b2_b3_1"
+          }
+        ]
+      },
+      {
+        "name": "route_b3_1",
+        "type": "p_route",
+        "component": "route_b3_1_comp",
+        "branches": [
+          {
+            "name": "1",
+            "next": "step_b3_b1_1"
+          },
+          {
+            "name": "2",
+            "next": "step_b3_b2_1"
+          },
+          {
+            "name": "3",
+            "next": "step_b3_b3_1"
+          }
+        ]
+      },
+      {
+        "name": "step_b1_b1_1",
+        "component": "step_b1_b1_comp",
+        "next": "join_b1_1"
+      },
+      {
+        "name": "step_b1_b2_1",
+        "component": "step_b1_b2_comp",
+        "next": "join_b1_1"
+      },
+      {
+        "name": "step_b1_b3_1",
+        "component": "step_b1_b3_comp",
+        "next": "join_b1_1"
+      },
+      {
+        "name": "step_b2_b1_1",
+        "component": "step_b2_b1_comp",
+        "next": "join_b2_1"
+      },
+      {
+        "name": "step_b2_b2_1",
+        "component": "step_b2_b2_comp",
+        "next": "join_b2_1"
+      },
+      {
+        "name": "step_b2_b3_1",
+        "component": "step_b2_b3_comp",
+        "next": "join_b2_1"
+      },
+      {
+        "name": "step_b3_b1_1",
+        "component": "step_b3_b1_comp",
+        "next": "join_b3_1"
+      },
+      {
+        "name": "step_b3_b2_1",
+        "component": "step_b3_b2_comp",
+        "next": "join_b3_1"
+      },
+      {
+        "name": "step_b3_b3_1",
+        "component": "step_b3_b3_comp",
+        "next": "join_b3_1"
+      },
+      {
+        "name": "join_b1_1",
+        "type": "p_join",
+        "next": "step_b1_2"
+      },
+      {
+        "name": "join_b2_1",
+        "type": "p_join",
+        "next": "step_b2_2"
+      },
+      {
+        "name": "join_b3_1",
+        "type": "p_join",
+        "next": "step_b3_2"
+      },
+      {
+        "name": "step_b1_2",
+        "component": "step_b1_2_comp",
+        "next": "join_1"
+      },
+      {
+        "name": "step_b2_2",
+        "component": "step_b2_2_comp",
+        "next": "join_1"
+      },
+      {
+        "name": "step_b3_2",
+        "component": "step_b3_2_comp",
+        "next": "join_1"
+      },
+      {
+        "name": "join_1",
+        "type": "p_join",
+        "next": "step_2"
+      },
+      {
+        "name": "step_2",
+        "component": "step_2_comp",
+        "next": "end"
+      }
+    ]
+  }
+}
