@@ -42,6 +42,49 @@
       "applied_at_age": "60m",
       "clock_starts": "immediately",
       "action": "CORR"
+    },
+    {
+      "name": "comp13_wb_entry",
+      "setup_on": "work_basket_entry",
+      "type": "work_basket",
+      "work_basket_name": "comp13_err3",
+      "applied_at_age": "60m",
+      "clock_starts": "immediately",
+      "action": "CORR"
+    },
+    {
+      // this is the new block structure which is backward compatible
+      // backward compatible meaning that the existing clients and existing SLA will
+      // continue to work. However if the existing SLA is updated to new structure
+      // then the corressponding clients will also need to change
+      "name": "some_milestone",
+      "setup_on": "work_basket_entry",
+      "type": "case_level",
+      "work_basket_name": "some_wb",
+      "applied_at_age": "30m",
+      "clock_starts": "immediately",
+      "action": "CORR",
+      "userdata": "",
+      // optional block
+      "further_milestones": [
+        {
+          "applied_at_age": "60m",
+          // first occurrence -> t0 + 60m
+          // second occurrence -> t0 + 120m
+          // third occurrence -> t0 + 180m
+          // repeat block is also optional
+          "repeat": 3
+        },
+        {
+          // t0 + 240m
+          "applied_at_age": "240m"
+        },
+        {
+          // etc.
+          "applied_at_age": "540m",
+          "repeat": 3
+        }
+      ]
     }
   ]
 }

@@ -44,7 +44,7 @@ public class TestFlowretParallelDynamic {
 
   @BeforeEach
   protected void beforeEach() {
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
   }
 

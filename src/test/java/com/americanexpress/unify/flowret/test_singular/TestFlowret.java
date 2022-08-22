@@ -61,7 +61,7 @@ public class TestFlowret {
 
   @BeforeEach
   protected void beforeEach() {
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
     newConsole.reset();
   }
@@ -75,7 +75,7 @@ public class TestFlowret {
   protected static void afterAll() {
     System.setOut(previousConsole);
     Flowret.instance().close();
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {
@@ -177,9 +177,9 @@ public class TestFlowret {
 
   private void myAssertEquals(String testCase, String resourcePath) {
     String s = newConsole.toString();
-    String output = BaseUtils.getWithoutCarriageReturn(s);
+    String output = TestUtils.trimLines(BaseUtils.getWithoutCarriageReturn(s));
     String expected = BaseUtils.getResourceAsString(TestFlowret.class, resourcePath);
-    expected = BaseUtils.getWithoutCarriageReturn(expected);
+    expected = TestUtils.trimLines(BaseUtils.getWithoutCarriageReturn(expected));
     assertEquals(expected, output);
     previousConsole.println();
     previousConsole.println();

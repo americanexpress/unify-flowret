@@ -12,7 +12,7 @@
  * the License.
  */
 
-package com.aexp.acq.unify.flowret;
+package com.americanexpress.unify.flowret;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +43,16 @@ public class TestUtils {
     for (String line : lines) {
       line = line.trim();
       s = s + line;
+    }
+    return s;
+  }
+
+  public static String trimLines(String s) {
+    String[] lines = s.split("\n");
+    s = "";
+    for (String line : lines) {
+      line = line.trim();
+      s = s + line + "\n";
     }
     return s;
   }

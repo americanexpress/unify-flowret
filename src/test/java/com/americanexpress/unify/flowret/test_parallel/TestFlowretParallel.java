@@ -43,9 +43,9 @@ public class TestFlowretParallel {
   private void myAssertEquals(String testCase, String resourcePath) {
     String output = newConsole.toString();
     String s = output;
-    output = com.aexp.acq.unify.flowret.TestUtils.getSortedWithoutCrLf(output);
+    output = TestUtils.getSortedWithoutCrLf(output);
     String expected = BaseUtils.getResourceAsString(TestFlowret.class, resourcePath);
-    expected = com.aexp.acq.unify.flowret.TestUtils.getSortedWithoutCrLf(expected);
+    expected = TestUtils.getSortedWithoutCrLf(expected);
     assertEquals(expected, output);
     previousConsole.println();
     previousConsole.println();
@@ -71,7 +71,7 @@ public class TestFlowretParallel {
 
   @BeforeEach
   protected void beforeEach() {
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
     newConsole.reset();
   }
@@ -85,7 +85,7 @@ public class TestFlowretParallel {
   protected static void afterAll() {
     System.setOut(previousConsole);
     Flowret.instance().close();
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
   }
 
   // 3 branches, happy path i.e. all branches proceed

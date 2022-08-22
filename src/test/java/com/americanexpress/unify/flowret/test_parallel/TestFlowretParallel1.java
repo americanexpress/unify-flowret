@@ -46,7 +46,7 @@ public class TestFlowretParallel1 {
 
   @BeforeEach
   protected void beforeEach() {
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
   }
 
@@ -58,7 +58,7 @@ public class TestFlowretParallel1 {
   @AfterAll
   protected static void afterAll() {
     Flowret.instance().close();
-    com.aexp.acq.unify.flowret.TestUtils.deleteFiles(dirPath);
+    TestUtils.deleteFiles(dirPath);
   }
 
   // 3 branches, happy path i.e. all branches proceed
