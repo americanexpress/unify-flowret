@@ -15,12 +15,12 @@ orchestrator we have built. It is lightweight, small, a pleasure to use and budd
 
 #### Getting Flowret package
 
-Flowret is available as a jar file in Maven central with the following Maven coordinates. The latest version is 1.3.6
+Flowret is available as a jar file in Maven central with the following Maven coordinates:
 
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>x.y.z</version>
+<version>1.3.7</version>
 ````
 
 ---

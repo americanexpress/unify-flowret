@@ -194,6 +194,7 @@ public class ProcessContext {
     pc.compType = pd.getUnit(pc.stepName).getType();
     pc.pendWorkBasket = pi.getPendWorkBasket();
     pc.pendErrorTuple = pi.getPendErrorTuple();
+    pc.lastPendWorkBasket = pi.getExecPath(pi.getPendExecPath()).getPrevPendWorkBasket();
     return pc;
   }
 

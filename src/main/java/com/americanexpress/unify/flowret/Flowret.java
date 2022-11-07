@@ -34,6 +34,7 @@ public class Flowret {
   private static Flowret singleton = new Flowret();
   private int maxThreads = 10;
   private int idleTimeout = 30000;
+  private String errorWorkbasket = null;
   private ExecutorService es = null;
   private volatile boolean writeAuditLog = true;
   private volatile boolean writeProcessInfoAfterEachStep = true;
@@ -81,12 +82,17 @@ public class Flowret {
    * @param typeIdSep   specifies the separator character to use to separate the type and the id in the document name used to persist in the data store
    */
   public static void init(int maxThreads, int idleTimeout, String typeIdSep) {
+    init(maxThreads, idleTimeout, typeIdSep, "flowret_error");
+  }
+
+  public static void init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket) {
     Flowret am = instance();
     am.maxThreads = maxThreads;
     am.idleTimeout = idleTimeout;
     BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue(new ArrayBlockingQueue<>(am.maxThreads * 2));
     am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
     DAO.SEP = typeIdSep;
+    am.errorWorkbasket = errorWorkbasket;
     ERRORS_FLOWRET.load();
     String json = BaseUtils.getResourceAsString(Utils.class, "/flowret/models/flowret_journey.json");
     JDocument.loadDocumentModel("flowret_journey", json);
@@ -135,6 +141,10 @@ public class Flowret {
 
   public boolean isWriteProcessInfoAfterEachStep() {
     return writeProcessInfoAfterEachStep;
+  }
+
+  public String getErrorWorkbasket() {
+    return errorWorkbasket;
   }
 
 }

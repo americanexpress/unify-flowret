@@ -97,6 +97,17 @@ public final class Rts {
 
   }
 
+  public boolean isCaseStarted(String caseId) {
+    String key = CONSTS_FLOWRET.DAO.PROCESS_INFO + CONSTS_FLOWRET.DAO.SEP + caseId;
+    Document d = dao.read(key);
+    if (d == null) {
+      return false;
+    }
+    else {
+      return true;
+    }
+  }
+
   private void abortIfStarted(String caseId) {
     String key = CONSTS_FLOWRET.DAO.PROCESS_INFO + CONSTS_FLOWRET.DAO.SEP + caseId;
 

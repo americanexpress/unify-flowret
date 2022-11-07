@@ -496,7 +496,7 @@ public class ExecThreadTask implements Runnable {
     catch (Exception e) {
       logger.info("Case id -> " + pi.getCaseId() + ", pending at persist step -> " + step.getName() + ", execution path -> " + execPath.getName());
       execPath.set(step.getName(), UnitResponseType.ERROR_PEND);
-      execPath.setPendWorkBasket("flowret_error");
+      execPath.setPendWorkBasket(Flowret.instance().getErrorWorkbasket());
       return null;
     }
   }
@@ -823,7 +823,7 @@ public class ExecThreadTask implements Runnable {
     catch (Exception e) {
       logger.error("Exception encountered while executing rule. Case id -> {}, step_name -> {}, comp_name -> {}", pi.getCaseId(), pc.getStepName(), pc.getCompName());
       logger.error("Exception details -> {}", e.getMessage());
-      rr = new RouteResponse(UnitResponseType.ERROR_PEND, null, "flowret_error");
+      rr = new RouteResponse(UnitResponseType.ERROR_PEND, null, Flowret.instance().getErrorWorkbasket());
     }
 
     return rr;
@@ -843,7 +843,7 @@ public class ExecThreadTask implements Runnable {
       logger.error("Exception encountered while executing step. Case id -> {}, step_name -> {}, comp_name -> {}", pi.getCaseId(), pc.getStepName(), pc.getCompName());
       logger.error("Exception details -> {}", e.getMessage());
       logger.error(BaseUtils.getStackTrace(e));
-      sr = new StepResponse(UnitResponseType.ERROR_PEND, null, "flowret_error");
+      sr = new StepResponse(UnitResponseType.ERROR_PEND, null, Flowret.instance().getErrorWorkbasket());
     }
 
     return sr;
