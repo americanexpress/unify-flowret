@@ -152,7 +152,7 @@ public class TestFlowretParallel {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
     String slaJson = null;
 
-      slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
     if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
       rts.startCase("1", json, null, slaJson);
     }

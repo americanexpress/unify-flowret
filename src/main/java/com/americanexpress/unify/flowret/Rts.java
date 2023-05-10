@@ -15,6 +15,7 @@
 package com.americanexpress.unify.flowret;
 
 import com.americanexpress.unify.base.BaseUtils;
+import com.americanexpress.unify.base.ErrorTuple;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.JDocument;
@@ -80,6 +81,7 @@ public final class Rts {
           // we log an error but we do not stop and the application has generated an error and we are not responsible for that
           logger.error("Error encountered while invoking event. Case id -> {}, event type -> {}, error message -> {}", pi.getCaseId(), event.name(), e.getMessage());
           logger.error(BaseUtils.getStackTrace(e));
+          throw new UnifyException(new ErrorTuple("flowret_error", "Exception encountered while invoking event"));
         }
         break;
 
@@ -249,6 +251,10 @@ public final class Rts {
   }
 
   public ProcessContext reopenCase(String caseId, String ticket, boolean pendBeforeResume, String pendWb) {
+    return reopenCase(caseId, ticket, pendBeforeResume, pendWb, null);
+  }
+
+  public ProcessContext reopenCase(String caseId, String ticket, boolean pendBeforeResume, String pendWb, ProcessVariables pvs) {
     if (pendBeforeResume == true) {
       if (BaseUtils.isNullOrEmpty(pendWb)) {
         throw new UnifyException("flowret_err_14", caseId);
@@ -267,6 +273,15 @@ public final class Rts {
     pd = Utils.getProcessDefinition(d);
     pi = Utils.getProcessInfo(dao, caseId, pd);
     pi.isPendAtSameStep = false;
+
+    // update process variables. We will add or update the ones passed in but not delete any
+    if (pvs != null) {
+      List<ProcessVariable> list = pvs.getListOfProcessVariables();
+      for (ProcessVariable pv : list) {
+        pi.setProcessVariable(pv);
+      }
+    }
+
     key = CONSTS_FLOWRET.DAO.JOURNEY_SLA + CONSTS_FLOWRET.DAO.SEP + caseId;
     slad = dao.read(key);
 
