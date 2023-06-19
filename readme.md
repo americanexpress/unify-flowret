@@ -20,7 +20,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.3.7</version>
+<version>1.4.0</version>
 ````
 
 ---
@@ -696,13 +696,12 @@ Flowret will throw an exception in case the case id already exists.
 `ProcessVariables processVariables` is a collection of variables that are
 made available to steps and routes. The process variables can be updated by steps and routes.
 
-`String journeySlaJson` specifies the SLA Milestones for the process. This is detailed out in the secition
-on SLA Milestones later in this document. A null value can be passed in case no SLA milestones are to be used.
+`String journeySlaJson` specifies the SLA Milestones for the process. This is detailed out in the secition on SLA
+Milestones later in this document. A null value can be passed in case no SLA milestones are to be used.
 
-This methods returns true in case the process was run else false.
+This methods throws an exception if the case could not be started.
 
-This method will internally start the process execution and return when
-either the process pends or when it finishes.
+This method will internally start the process execution and return when either the process pends or when it finishes.
 
 At the time of starting the case, Flowret also writes out a copy of the process definition associated
 with the case. This locks the process definition to the case
@@ -854,8 +853,7 @@ In future versions, a feature may be provided for Flowret to return a list of pe
 
 #### Resume a case
 
-In case a process had been started earlier and had pended, the application can resume the same
-by the following call:
+In case a process had been started earlier and had pended, the application can resume the same by the following call:
 
 ```java
 rts.resumeCase(caseId);
@@ -865,10 +863,25 @@ rts.resumeCase(caseId);
 
 ---
 
+#### Reopen a case
+
+A case which has already been finalized can be reopened. In order to do this, there must be a ticket defined in the
+definition which tells Flowret where to begin the execution from when reopen is called. This ticket needs to be passed
+into the reopen method as below:
+
+```java
+rts.reopenCase(String caseId,String ticket,boolean pendBeforeResume,String pendWorkbasket);
+        rts.reopenCase(String caseId,String ticket,boolean pendBeforeResume,String pendWorkbasket,ProcessVariables pvs);
+```
+
+The user can also specify if the case is to be pended in a workbasket after reopen. If this is set to true, the name of
+the pend work basket needs to be specified. The user can also provide a list of process variables which will be added /
+updated to the already existing process variables.
+
 #### Audit logging
 
-Flowret logs information to the data store (as specified by the Dao) after it executes
-each step / route. Each entry comprises of a JSON document with the name as described before:
+Flowret logs information to the data store (as specified by the Dao) after it executes each step / route. Each entry
+comprises of a JSON document with the name as described before:
 
 Each audit log JSON file contains information of the following:
 
@@ -1103,7 +1116,7 @@ An SLA milestone is a definition of an action to be systematically performed som
 SLA milestones can be defined at the following levels:
 
 * On case start
-* On case reopened (yet to be implemented)
+* On case reopened
 * On work basket entry
 * On work basket exit
 

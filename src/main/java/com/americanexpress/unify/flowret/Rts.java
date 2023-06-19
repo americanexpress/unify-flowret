@@ -15,7 +15,6 @@
 package com.americanexpress.unify.flowret;
 
 import com.americanexpress.unify.base.BaseUtils;
-import com.americanexpress.unify.base.ErrorTuple;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.jdocs.Document;
 import com.americanexpress.unify.jdocs.JDocument;
@@ -66,22 +65,14 @@ public final class Rts {
       case ON_PROCESS_COMPLETE:
       case ON_PROCESS_PEND:
       case ON_PROCESS_REOPEN:
-        try {
-          eventHandler.invoke(event, pc);
-          if ((slad != null) && (slaQm != null)) {
-            raiseSlaEvent(event, pc);
-          }
-          if (event == ON_PROCESS_PEND) {
-            // set the prev pend work basket
-            ExecPath ep = pi.getExecPath(pi.getPendExecPath());
-            ep.setPrevPendWorkBasket(ep.getPendWorkBasket());
-          }
+        eventHandler.invoke(event, pc);
+        if ((slad != null) && (slaQm != null)) {
+          raiseSlaEvent(event, pc);
         }
-        catch (Exception e) {
-          // we log an error but we do not stop and the application has generated an error and we are not responsible for that
-          logger.error("Error encountered while invoking event. Case id -> {}, event type -> {}, error message -> {}", pi.getCaseId(), event.name(), e.getMessage());
-          logger.error(BaseUtils.getStackTrace(e));
-          throw new UnifyException(new ErrorTuple("flowret_error", "Exception encountered while invoking event"));
+        if (event == ON_PROCESS_PEND) {
+          // set the prev pend work basket
+          ExecPath ep = pi.getExecPath(pi.getPendExecPath());
+          ep.setPrevPendWorkBasket(ep.getPendWorkBasket());
         }
         break;
 
@@ -96,7 +87,6 @@ public final class Rts {
         }
         break;
     }
-
   }
 
   public boolean isCaseStarted(String caseId) {
@@ -153,30 +143,14 @@ public final class Rts {
       pi.setProcessVariable(pv);
     }
 
-    boolean bContinue = true;
     ProcessContext pc = null;
     if (hasAlreadyStarted == false) {
       logger.info("Case id -> " + pi.getCaseId() + ", successfully created case");
-
-      // invoke event handler
       pc = ProcessContext.forEvent(EventType.ON_PROCESS_START, this, ".");
-      try {
-        invokeEventHandler(EventType.ON_PROCESS_START, pc);
-      }
-      catch (Exception e) {
-        bContinue = false;
-        pc = null;
-        logger.info("Case id -> " + pi.getCaseId() + ", aborting as application exception encountered while raising event");
-        logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
-        logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
-      }
+      invokeEventHandler(EventType.ON_PROCESS_START, pc);
     }
 
-    // start case
-    if (bContinue == true) {
-      pc = resumeCase(caseId, false, null);
-    }
-
+    pc = resumeCase(caseId, false, null);
     return pc;
   }
 
@@ -211,33 +185,20 @@ public final class Rts {
       throw new UnifyException("flowret_err_6", pi.getCaseId());
     }
 
-    boolean bContinue = true;
     ProcessContext pc = null;
-    try {
-      if (raiseResumeEvent) {
-        pc = ProcessContext.forEvent(EventType.ON_PROCESS_RESUME, this, pi.getPendExecPath());
-        invokeEventHandler(EventType.ON_PROCESS_RESUME, pc);
-      }
-
-      if (pi.getTicket().isEmpty() == false) {
-        pc = ProcessContext.forEvent(EventType.ON_TICKET_RAISED, this, pi.getPendExecPath());
-        invokeEventHandler(EventType.ON_TICKET_RAISED, pc);
-      }
-
-    }
-    catch (Exception e) {
-      bContinue = false;
-      pc = null;
-      logger.info("Case id -> " + pi.getCaseId() + ", aborting as application exception encountered while raising event");
-      logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
-      logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
+    if (raiseResumeEvent) {
+      pc = ProcessContext.forEvent(EventType.ON_PROCESS_RESUME, this, pi.getPendExecPath());
+      invokeEventHandler(EventType.ON_PROCESS_RESUME, pc);
     }
 
-    if (bContinue == true) {
-      // initiate on the current thread
-      ExecThreadTask task = new ExecThreadTask(this);
-      pc = task.execute();
+    if (pi.getTicket().isEmpty() == false) {
+      pc = ProcessContext.forEvent(EventType.ON_TICKET_RAISED, this, pi.getPendExecPath());
+      invokeEventHandler(EventType.ON_TICKET_RAISED, pc);
     }
+
+    // initiate on the current thread
+    ExecThreadTask task = new ExecThreadTask(this);
+    pc = task.execute();
 
     return pc;
   }
@@ -307,17 +268,12 @@ public final class Rts {
     ProcessContext pc = null;
 
     // invoke event handler
-    try {
-      pc = ProcessContext.forEvent(EventType.ON_PROCESS_REOPEN, this, ".");
-      invokeEventHandler(EventType.ON_PROCESS_REOPEN, pc);
+    pc = ProcessContext.forEvent(EventType.ON_PROCESS_REOPEN, this, ".");
+    invokeEventHandler(EventType.ON_PROCESS_REOPEN, pc);
 
+    if (pendBeforeResume == true) {
       pc = ProcessContext.forEvent(ON_PROCESS_PEND, this, ".");
       invokeEventHandler(ON_PROCESS_PEND, pc);
-    }
-    catch (Exception e) {
-      logger.info("Case id -> " + pi.getCaseId() + ", exception encountered while raising event");
-      logger.info("Case id -> " + pi.getCaseId() + ", exception details -> " + e.getMessage());
-      logger.info("Case id -> " + pi.getCaseId() + ", exception stack -> " + e.getStackTrace());
     }
 
     // resume the case if required

@@ -54,7 +54,6 @@ public final class Wms {
     // get pc as per updated pi
     ProcessContext pc = ProcessContext.forWms(pd, pi);
 
-    boolean isError = false;
     try {
       // call the work manager on the application
       if (wm != null) {
@@ -62,34 +61,27 @@ public final class Wms {
       }
     }
     catch (Exception e) {
-      isError = true;
       logger.error("Error encountered while invoking work manager in the application. Case id -> {}, error message -> {}", pi.getCaseId(), e.getMessage());
 
       // undo the changes
       ep.setPrevPendWorkBasket(prevWb);
       ep.setPendWorkBasket(currWb);
+
+      throw e;
     }
 
-    if (isError == false) {
-      try {
-        // enqueue / dequeue as required
-        if (currWb.equals(newWb) == false) {
-          if (currWb.equals(tbcSlaWb) == false) {
-            if (slaQm != null) {
-              Utils.dequeueWorkBasketMilestones(pc, currWb, slad, slaQm);
-            }
-          }
-
-          if (newWb.equals(tbcSlaWb) == false) {
-            if ((slad != null) && (slaQm != null)) {
-              Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, newWb, slad, slaQm);
-            }
-          }
+    // enqueue / dequeue as required
+    if (currWb.equals(newWb) == false) {
+      if (currWb.equals(tbcSlaWb) == false) {
+        if (slaQm != null) {
+          Utils.dequeueWorkBasketMilestones(pc, currWb, slad, slaQm);
         }
       }
-      catch (Exception e) {
-        isError = true;
-        logger.error("Error encountered while invoking sla queue manager in the application. Case id -> {}, error message -> {}", pi.getCaseId(), e.getMessage());
+
+      if (newWb.equals(tbcSlaWb) == false) {
+        if ((slad != null) && (slaQm != null)) {
+          Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, newWb, slad, slaQm);
+        }
       }
     }
 
