@@ -21,10 +21,7 @@ import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.CONSTS_FLOWRET.DAO;
 import com.americanexpress.unify.jdocs.JDocument;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 /*
  * @author Deepak Arora
@@ -86,11 +83,22 @@ public class Flowret {
   }
 
   public static void init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket) {
+    init(maxThreads, idleTimeout, typeIdSep, errorWorkbasket, null);
+  }
+
+  public static void init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket, ThreadFactory threadFactory) {
     Flowret am = instance();
     am.maxThreads = maxThreads;
     am.idleTimeout = idleTimeout;
     BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue(new ArrayBlockingQueue<>(am.maxThreads * 2));
-    am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
+
+    if (threadFactory == null) {
+      am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
+    }
+    else {
+      am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, threadFactory, new RejectedItemHandler());
+    }
+
     DAO.SEP = typeIdSep;
     am.errorWorkbasket = errorWorkbasket;
     ERRORS_FLOWRET.load();
