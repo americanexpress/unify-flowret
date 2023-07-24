@@ -749,8 +749,6 @@ public class ExecThreadTask implements Runnable {
   private String executeThreads(ExecPath parentExecPath, Route route, List<String> branches) {
     int count = branches.size();
     ExecThreadTask[] tasks = new ExecThreadTask[count];
-    Future<?>[] futures = new Future[count];
-    ExecutorService es = Flowret.instance().getExecutorService();
 
     for (int i = 0; i < count; i++) {
       String branchName = branches.get(i);
@@ -772,21 +770,8 @@ public class ExecThreadTask implements Runnable {
       pi.setExecPath(ep);
     }
 
-    // start threads
-    for (int i = 0; i < count; i++) {
-      futures[i] = es.submit(tasks[i]);
-    }
-
-    // wait for threads to finish
-    for (int i = 0; i < tasks.length; i++) {
-      try {
-        futures[i].get();
-      }
-      catch (InterruptedException | ExecutionException e) {
-        // should never happen
-        throw new UnifyException("flowret_err_5", e, pi.getCaseId());
-      }
-    }
+    // run threads and wait for them to finish
+    runThreads(tasks);
 
     // check if all have completed
     boolean isPend = false;
@@ -807,6 +792,58 @@ public class ExecThreadTask implements Runnable {
     }
     else {
       return null;
+    }
+  }
+
+  private void runThreadsWithExecutorService(ExecutorService executorService, ExecThreadTask[] tasks) {
+    int count = tasks.length;
+    Future<?>[] futures = new Future[count];
+
+    // start threads
+    for (int i = 0; i < count; i++) {
+      futures[i] = executorService.submit(tasks[i]);
+    }
+
+    // wait for them to finish
+    for (int i = 0; i < tasks.length; i++) {
+      try {
+        futures[i].get();
+      }
+      catch (InterruptedException | ExecutionException e) {
+        // should never happen
+        throw new UnifyException("flowret_err_5", e, pi.getCaseId());
+      }
+    }
+  }
+
+  private void runThreadsAsChildren(ExecThreadTask[] tasks) {
+    Thread[] threads = new Thread[tasks.length];
+
+    // start threads
+    for (int i = 0; i < tasks.length; i++) {
+      threads[i] = new Thread(tasks[i]);
+      threads[i].start();
+    }
+
+    // wait for them to finish
+    for (int i = 0; i < tasks.length; i++) {
+      try {
+        threads[i].join();
+      }
+      catch (InterruptedException e) {
+        // should never happen
+        throw new UnifyException("flowret_err_5", e, pi.getCaseId());
+      }
+    }
+  }
+
+  private void runThreads(ExecThreadTask[] tasks) {
+    ExecutorService executorService = Flowret.instance().getExecutorService();
+    if (executorService == null) {
+      runThreadsAsChildren(tasks);
+    }
+    else {
+      runThreadsWithExecutorService(executorService, tasks);
     }
   }
 

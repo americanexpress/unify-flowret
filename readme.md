@@ -20,7 +20,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.4.1</version>
+<version>1.4.2</version>
 ````
 
 ---
@@ -86,11 +86,11 @@ case
 BPM products do not offer true technical parallel processing.
 They offer business parallel processing in which while one can have multiple branches
 emanating from a route, they will still be executed one at a time.
-1. Except for synchronization of application specific data structures, no additional work around enabling
-parallel processing is required to be done on the application / consumer side. Parallel
-processing is completely managed by Flowret as specified in the process
-definition file
-1. Configurable number of threads are used for parallel processing
+1. Except for synchronization of application specific data structures, no additional work around enabling parallel
+   processing is required to be done on the application / consumer side. Parallel processing is completely managed by
+   Flowret as specified in the process definition file
+1. Configurable number of threads from a pool used for parallel processing or unbounded child threads - the choice is
+   yours
 
 ##### State Management
 1. Implements "resume from where it left off" functionality
@@ -445,30 +445,58 @@ step should be outside of the outest `p_route` / `p_join` construct
 #### Initialize Flowret - needs to be done only once at startup
 
 ```java
-Flowret.init(maxThreads, idleTimeout, typeIdSep);
+  Flowret.init(idleTimeout,typeIdSep);
+        Flowret.init(idleTimeout,typeIdSep,errorWorkbasket);
+        Flowret.init(maxThreads,idleTimeout,typeIdSep);
+        Flowret.init(maxThreads,idleTimeout,typeIdSep,errorWorkbasket);
 ```
 
-`int maxThreads` specifies the maxiumum number of threads
-in the pool used for parallel processing. By default, the caller thread
-is used to run the process in case of single threaded process.
+`int maxThreads`
 
-`int idleTimeout` specifies the idle time of a thread in the parallel
-processing thread pool after which it will be terminated to conserve system resources.
+Specifies the maxiumum number of threads in an executor eervice pool used for parallel processing.
 
-`String typeIdSep` specifies the character to be used as the separator between the type and id
-fields in the name of the document to be written to the data store (via dao object).
-Flowret uses the following document naming convention:
+This variable only comes into picture when Flowret has to do parallel processing. For single threaded process execution,
+the caller thread is used to run the process.
 
-`<type><separator><id>`
+The parallel processing can be setup in two ways. If the value of this variable is specified and is more than 0, then
+this specifies the maximum number of threads which can be used in parallel processing across cases. This is important to
+understand - Flowret will internally create a thread pool with so many threads and each time it is required for a
+parallel path to be executed, a thread from this pool will be used. This is a fixed thread pool which allows clients to
+specify an upper bound on the number of threads to be used for parallel processing.
 
-At this point of time, we can describe the various documents that Flowret writes to the data store
-as it executes a case.
+In case the value passed for this variable is less than or equal to 0, Flowret will create threads on the fly with no
+upper bound. Note that, in this option, there may be a very small impact on performance as each time a parallel path is
+to be executed, a new thread will be created (
+as compared to the fixed thread pool where the threads are already created and ready to run). Very important to note is
+that this option is not bounded. In other words, clients could run multiple parallel processing cases such that the pod
+gets overwhelmed with the high number of threads / processing. It is left up to the clients to take care of such
+scenarios and put some kind of safe guards.
 
-1. Audit Log - a document that stores the state of the execution paths and process variables after
-execution of each step / route
-    1. Type - `flowret_audit_log`
-    1. Separator - `-`
-    1. id - `<case_id>_<sequence_number>_<step_name>`
+`int idleTimeout`
+
+Specifies the idle time of a thread in the parallel processing thread pool after which it will be terminated to conserve
+system resources.
+
+`String typeIdSep`
+
+Specifies the character to be used as the separator between the type and id fields in the name of the document to be
+written to the data store (via dao object). Flowret uses the following document naming
+convention `<type><separator><id>`
+
+`String errorWorkBasket`
+
+Specifies the name of the work basket to be used in case Flowret encounters an error after the step / route has been
+executed but Flowret encounters an error while processing the application event or encounters an internal error. This
+value will be written out to the process info file.
+
+At this point of time, we can describe the various documents that Flowret writes to the data store as it executes a
+case.
+
+1. Audit Log - a document that stores the state of the execution paths and process variables after execution of each
+   step / route
+   1. Type - `flowret_audit_log`
+   1. Separator - `-`
+   1. id - `<case_id>_<sequence_number>_<step_name>`
     1. Example - `flowret_audit_log-1_00001_step_13`
 1. Journey - the document that stores the process definition which a case needs to execute
     1. Type - `flowret_journey`

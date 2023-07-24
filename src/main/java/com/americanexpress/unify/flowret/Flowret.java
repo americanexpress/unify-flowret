@@ -21,7 +21,10 @@ import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.CONSTS_FLOWRET.DAO;
 import com.americanexpress.unify.jdocs.JDocument;
 
-import java.util.concurrent.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 /*
  * @author Deepak Arora
@@ -71,32 +74,26 @@ public class Flowret {
   private Flowret() {
   }
 
-  /**
-   * Method that is called for initializing Flowret
-   *
-   * @param maxThreads  specifies the number of threads used for parallel processing
-   * @param idleTimeout specifies the time out in milliseconds after which parallel processing threads will die out if idle
-   * @param typeIdSep   specifies the separator character to use to separate the type and the id in the document name used to persist in the data store
-   */
+  public static void init(int idleTimeout, String typeIdSep) {
+    init(0, idleTimeout, typeIdSep, "flowret_error");
+  }
+
+  public static void init(int idleTimeout, String typeIdSep, String errorWorkbasket) {
+    init(0, idleTimeout, typeIdSep, errorWorkbasket);
+  }
+
   public static void init(int maxThreads, int idleTimeout, String typeIdSep) {
     init(maxThreads, idleTimeout, typeIdSep, "flowret_error");
   }
 
   public static void init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket) {
-    init(maxThreads, idleTimeout, typeIdSep, errorWorkbasket, null);
-  }
-
-  public static void init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket, ThreadFactory threadFactory) {
     Flowret am = instance();
     am.maxThreads = maxThreads;
     am.idleTimeout = idleTimeout;
-    BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue(new ArrayBlockingQueue<>(am.maxThreads * 2));
 
-    if (threadFactory == null) {
+    if (maxThreads > 0) {
+      BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue(new ArrayBlockingQueue<>(am.maxThreads * 2));
       am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
-    }
-    else {
-      am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, threadFactory, new RejectedItemHandler());
     }
 
     DAO.SEP = typeIdSep;
@@ -112,15 +109,17 @@ public class Flowret {
    * Method that is used to close Flowret
    */
   public static void close() {
-    singleton.es.shutdown();
-    try {
-      singleton.es.awaitTermination(5, TimeUnit.MINUTES);
+    if (singleton.es != null) {
+      singleton.es.shutdown();
+      try {
+        singleton.es.awaitTermination(5, TimeUnit.MINUTES);
+      }
+      catch (InterruptedException e) {
+        // should never happen
+        throw new UnifyException("flowret_err_7", e);
+      }
+      singleton.es = null;
     }
-    catch (InterruptedException e) {
-      // should never happen
-      throw new UnifyException("flowret_err_7", e);
-    }
-    singleton.es = null;
   }
 
   public int getMaxThreads() {
