@@ -42,7 +42,9 @@ public class ExecPath {
   private String prevPendWorkBasket = "";
 
   // To Be Cleared sla work basket. This will contain the name of the work basket for which SLA milestones
-  // are to be cleared in case we receive an ok_pend_eor response
+  // are to be cleared in case we receive an ok_pend_eor response and there is an error_pend after that. Then
+  // when the application is resumed, we would like the original work basket where the application had
+  // pended to fire the dequeue SLA when the error is cleared
   private String tbcSlaWorkBasket = "";
 
   // this contains the response type return from the last step or route executed by this execution path

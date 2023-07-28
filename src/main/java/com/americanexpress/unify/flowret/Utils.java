@@ -65,7 +65,7 @@ public class Utils {
     return pi;
   }
 
-  private static void setIsComplete(Document pid) {
+  private static void setIsComplete(String caseId, Document pid) {
     Boolean isComplete = pid.getBoolean("$.process_info.is_complete");
     boolean b = true;
     if (isComplete == null) {
@@ -87,6 +87,7 @@ public class Utils {
 
       isComplete = b;
       pid.setBoolean("$.process_info.is_complete", isComplete);
+      logger.info("Case id -> {}, setting $.process_info.is_complete to -> {}", caseId, isComplete);
     }
   }
 
@@ -111,7 +112,7 @@ public class Utils {
     return sep;
   }
 
-  private static boolean checkAndSetTicketInExecPath(Document pid) {
+  private static boolean checkAndSetTicketInExecPath(String caseId, Document pid) {
     boolean isTicketRaised = false;
 
     String ticket = pid.getString("$.process_info.ticket");
@@ -124,6 +125,7 @@ public class Utils {
         pid.setString("$.process_info.pend_exec_path", epName);
         pid.setString("$.process_info.exec_paths[name=%].pend_workbasket", "flowret_temp_hold");
         pid.setString("$.process_info.exec_paths[name=%].unit_response_type", UnitResponseType.OK_PEND.toString().toLowerCase(), epName);
+        logger.info("Case id -> {}, setting info for execution path -> {}", caseId, epName);
       }
 
       // set ticket as blank in all exec paths
@@ -144,7 +146,6 @@ public class Utils {
 
   private static void checkExecPathCompletion(Document pid, String caseId, ProcessDefinition pd) {
     int size = pid.getArraySize("$.process_info.exec_paths[]");
-    int oldLevel = 0;
 
     for (int i = 0; i < size; i++) {
       // get status
@@ -154,10 +155,18 @@ public class Utils {
       if (epStatus == ExecPathStatus.STARTED) {
         // we have an exec path that could not go to completion. Set status and wb
         pid.setString("$.process_info.exec_paths[%].status", ExecPathStatus.COMPLETED.toString().toLowerCase(), i + "");
-        String wb = pid.getString("$.process_info.exec_paths[%].pend_workbasket", i + "");
-        if (wb == null) {
-          pid.setString("$.process_info.exec_paths[%].pend_workbasket", "flowret_temp_hold", i + "");
+        logger.info("Case id -> {}, setting status to complete for execution path -> {}", caseId, epName);
+
+        String prevWb = pid.getString("$.process_info.exec_paths[%].prev_pend_workbasket", i + "");
+        String wb = null;
+        if ((prevWb == null) || (prevWb.isEmpty() == true)) {
+          wb = "flowret_temp_hold";
         }
+        else {
+          wb = prevWb;
+        }
+        pid.setString("$.process_info.exec_paths[%].pend_workbasket", wb, i + "");
+        logger.info("Case id -> {}, setting pend work basket to -> {} for execution path -> {}", caseId, wb, epName);
 
         String urt = pid.getString("$.process_info.exec_paths[%].unit_response_type", i + "");
         if (urt == null) {
@@ -175,6 +184,7 @@ public class Utils {
             // but before the parent thread could join on child threads the crash happened. Since practically
             // it is not possible to take care of every situation, we will live with this risk hoping that one of the child
             // process would not have completed in which case we should be OK
+            logger.info("Case id -> {}, encountered p_route or p_route_dynamic. Doing nothing. Execution path -> {}", caseId, epName);
           }
           else if (unit.getType() == UnitType.S_ROUTE) {
             // urt can be ok_proceed or error_pend. If ok_proceed we need to replace with ok_pend_eor
@@ -182,9 +192,11 @@ public class Utils {
             // leave it as it is
             if (urt.equals(UnitResponseType.OK_PROCEED.toString().toLowerCase()) == true) {
               pid.setString("$.process_info.exec_paths[%].unit_response_type", UnitResponseType.OK_PEND_EOR.toString().toLowerCase(), i + "");
+              logger.info("Case id -> {}, encountered s_route and urt as ok_proceed. Setting urt to ok_pend_eor. Execution path -> {}", caseId, epName);
             }
             else {
               // nothing to do
+              logger.info("Case id -> {}, encountered s_route and urt as not ok_proceed. Doing nothing. Execution path -> {}", caseId, epName);
             }
           }
           else {
@@ -197,6 +209,7 @@ public class Utils {
             }
             else {
               // nothing to do
+              logger.info("Case id -> {}, encountered step and urt as not ok_proceed. Doing nothing. Execution path -> {}", caseId, epName);
             }
           }
         }
@@ -231,6 +244,7 @@ public class Utils {
 
         if (pendExecPath.isEmpty() == false) {
           pid.setString("$.process_info.pend_exec_path", pendExecPath);
+          logger.info("Case id -> {}, setting pend exec path -> {}", caseId, pendExecPath);
         }
         else {
           logger.info("Case id -> {}, could not find a exec path to pend", caseId);
@@ -271,9 +285,9 @@ public class Utils {
 
     // this logic should work for both single and multithreaded use cases
 
-    setIsComplete(pid);
+    setIsComplete(caseId, pid);
 
-    boolean isTicket = checkAndSetTicketInExecPath(pid);
+    boolean isTicket = checkAndSetTicketInExecPath(caseId, pid);
     if (isTicket == false) {
       checkExecPathCompletion(pid, caseId, pd);
     }

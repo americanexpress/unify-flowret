@@ -93,9 +93,8 @@ public class TestFlowret {
       // nothing to do
     }
 
-    ProcessContext pc = null;
     if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
-      pc = rts.startCase("1", json, null, slaJson);
+      rts.startCase("1", json, null, slaJson);
     }
 
     try {
@@ -107,6 +106,51 @@ public class TestFlowret {
     catch (UnifyException e) {
       System.out.println("Exception -> " + e.getMessage());
     }
+  }
+
+  private static void runJourneyWms(String journey) {
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    String slaJson = null;
+
+    try {
+      slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    }
+    catch (Exception e) {
+      // nothing to do
+    }
+
+    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+      rts.startCase("1", json, null, slaJson);
+    }
+
+    Wms wms = Flowret.instance().getWorkManagementService(new FileDao(dirPath), new TestWorkManager(), new TestSlaQueueManager());
+    wms.changeWorkBasket("1", "wb_2");
+
+    rts.resumeCase("1");
+  }
+
+  private static void runJourneyWms1(String journey) {
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    String slaJson = null;
+
+    try {
+      slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    }
+    catch (Exception e) {
+      // nothing to do
+    }
+
+    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+      rts.startCase("1", json, null, slaJson);
+    }
+
+    Wms wms = Flowret.instance().getWorkManagementService(new FileDao(dirPath), new TestWorkManager(), new TestSlaQueueManager());
+    wms.changeWorkBasket("1", "wb_2");
+    wms.changeWorkBasket("1", "wb_3");
+    wms.changeWorkBasket("1", "wb_4");
+    wms.changeWorkBasket("1", "wb_5");
+
+    rts.resumeCase("1");
   }
 
   // pend scenario without ticket
@@ -173,6 +217,15 @@ public class TestFlowret {
     RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
+  }
+
+  public static void setScenario6() {
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
+  }
+
+  public static void setScenario7() {
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
   }
 
   private void myAssertEquals(String testCase, String resourcePath) {
@@ -269,7 +322,23 @@ public class TestFlowret {
     setScenario5();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
     runJourney("test_journey");
-    // myAssertEquals("testScenario5", "/flowret/test_singular/test_scenario_1_expected.txt");
+    myAssertEquals("testScenario5", "/flowret/test_singular/test_scenario_5_expected.txt");
+  }
+
+  @Test
+  void testScenario6() {
+    setScenario6();
+    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourneyWms("test_journey_wms");
+    myAssertEquals("testScenario6", "/flowret/test_singular/test_scenario_6_expected.txt");
+  }
+
+  @Test
+  void testScenario7() {
+    setScenario7();
+    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourneyWms1("test_journey_wms");
+    myAssertEquals("testScenario7", "/flowret/test_singular/test_scenario_7_expected.txt");
   }
 
   @Test

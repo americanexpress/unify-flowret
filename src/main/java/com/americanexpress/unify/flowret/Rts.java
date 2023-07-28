@@ -50,7 +50,7 @@ public final class Rts {
     this.slaQm = slaQm;
   }
 
-  protected void invokeEventHandler(EventType event, ProcessContext pc) {
+  private void invokeEvent(EventType event, ProcessContext pc) {
     if (eventHandler == null) {
       return;
     }
@@ -59,6 +59,7 @@ public final class Rts {
     wb = (wb == null) ? "" : wb;
     logger.info("Case id -> {}, raising event -> {}, comp name -> {}, work basket -> {}", pi.getCaseId(), event.name(), pc.getCompName(), wb);
 
+    // invoke event on application
     switch (event) {
       case ON_PROCESS_START:
       case ON_PROCESS_RESUME:
@@ -66,14 +67,6 @@ public final class Rts {
       case ON_PROCESS_PEND:
       case ON_PROCESS_REOPEN:
         eventHandler.invoke(event, pc);
-        if ((slad != null) && (slaQm != null)) {
-          raiseSlaEvent(event, pc);
-        }
-        if (event == ON_PROCESS_PEND) {
-          // set the prev pend work basket
-          ExecPath ep = pi.getExecPath(pi.getPendExecPath());
-          ep.setPrevPendWorkBasket(ep.getPendWorkBasket());
-        }
         break;
 
       case ON_PERSIST:
@@ -87,6 +80,67 @@ public final class Rts {
         }
         break;
     }
+  }
+
+  private void raiseSla(EventType event, ProcessContext pc) {
+    if ((slad == null) || (slaQm == null)) {
+      return;
+    }
+
+    switch (event) {
+      case ON_PROCESS_START:
+      case ON_PROCESS_RESUME:
+      case ON_PROCESS_COMPLETE:
+      case ON_PROCESS_PEND:
+      case ON_PROCESS_REOPEN:
+        raiseSlaEvent(event, pc);
+        break;
+
+      case ON_PERSIST:
+      case ON_TICKET_RAISED:
+        break;
+    }
+  }
+
+  private void setPrevPendWorkbasket(EventType event) {
+    if (event == ON_PROCESS_PEND) {
+      // set the prev pend work basket
+      ExecPath ep = pi.getExecPath(pi.getPendExecPath());
+      ep.setPrevPendWorkBasket(ep.getPendWorkBasket());
+    }
+  }
+
+  // this method can be used in the future instead of the above one so that the current pend
+  // wb and the prev pend wb are correctly represented in the audit logs and process info
+  // in the persistent storage. Reason for not switching over just now is because of more extensive
+  // regression testing required
+  //  private void setPrevPendWorkbasket(EventType event) {
+  //    switch (event) {
+  //      case ON_PROCESS_START:
+  //      case ON_PROCESS_RESUME: {
+  //        // set the prev pend work basket
+  //        String s = pi.getPendExecPath();
+  //        if (BaseUtils.isNullOrEmpty(s)) {
+  //          return;
+  //        }
+  //        ExecPath ep = pi.getExecPath(s);
+  //        ep.setPrevPendWorkBasket(ep.getPendWorkBasket());
+  //      }
+  //      break;
+  //
+  //      case ON_PROCESS_PEND:
+  //      case ON_PROCESS_COMPLETE:
+  //      case ON_PROCESS_REOPEN:
+  //      case ON_PERSIST:
+  //      case ON_TICKET_RAISED:
+  //        break;
+  //    }
+  //  }
+
+  protected void invokeEventHandler(EventType event, ProcessContext pc) {
+    invokeEvent(event, pc);
+    raiseSla(event, pc);
+    setPrevPendWorkbasket(event);
   }
 
   public boolean isCaseStarted(String caseId) {
@@ -285,8 +339,6 @@ public final class Rts {
   }
 
   private void raiseSlaEvent(EventType event, ProcessContext pc) {
-    Document d = null;
-
     switch (event) {
       case ON_PROCESS_START: {
         Utils.enqueueCaseStartMilestones(pc, slad, slaQm);

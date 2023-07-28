@@ -1,0 +1,43 @@
+{
+  "journey": {
+    "name": "test_journey",
+    "tickets": [
+      {
+        "name": "final_step",
+        "step": "step29"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "id",
+        "type": "string",
+        "value": ""
+      }
+    ],
+    "flow": [
+      {
+        "comment": "if unit type is step, then type field is optional",
+        "name": "start",
+        "type": "step",
+        "component": "start_comp",
+        "user_data": "Hello start comp",
+        "next": "step2"
+      },
+      {
+        "name": "step2",
+        "component": "comp2",
+        "next": "step3"
+      },
+      {
+        "name": "step3",
+        "component": "comp3",
+        "next": "step4"
+      },
+      {
+        "name": "step4",
+        "component": "comp4",
+        "next": "end"
+      }
+    ]
+  }
+}

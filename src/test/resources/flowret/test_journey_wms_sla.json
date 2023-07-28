@@ -1,0 +1,30 @@
+{
+  "milestones": [
+    {
+      "name": "case_start_1",
+      "setup_on": "case_start",
+      "type": "case_level",
+      "applied_at_age": "20d",
+      "clock_starts": "immediately",
+      "action": "CANCEL:CW"
+    },
+    {
+      "name": "wb_1",
+      "setup_on": "work_basket_entry",
+      "type": "work_basket",
+      "work_basket_name": "wb_1",
+      "applied_at_age": "30m",
+      "clock_starts": "immediately",
+      "action": "CORR"
+    },
+    {
+      "name": "wb_2",
+      "setup_on": "work_basket_entry",
+      "type": "work_basket",
+      "work_basket_name": "wb_2",
+      "applied_at_age": "30m",
+      "clock_starts": "immediately",
+      "action": "CORR"
+    }
+  ]
+}

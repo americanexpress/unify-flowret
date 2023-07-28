@@ -679,7 +679,7 @@ public class ExecThreadTask implements Runnable {
     logger.info("Case id -> " + pi.getCaseId() + ", executing pause step -> " + pause.getName() + ", execution path -> " + execPath.getName());
     try {
       pi.getLock().lock();
-      execPath.set(pause.getName(), UnitResponseType.OK_PEND);
+      execPath.set(ExecPathStatus.COMPLETED, pause.getName(), UnitResponseType.OK_PEND);
       execPath.setPendWorkBasket("flowret_pause");
       pi.getSetter().setPendExecPath(execPath.getName());
     }

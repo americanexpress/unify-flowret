@@ -85,6 +85,9 @@ public final class Wms {
       }
     }
 
+    // copy the new work basket into prev work basket
+    ep.setPrevPendWorkBasket(newWb);
+
     // write audit log
     Utils.writeAuditLog(dao, pi, null, null, "Wms");
 
