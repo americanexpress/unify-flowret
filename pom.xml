@@ -19,7 +19,7 @@
 
     <groupId>com.americanexpress.unify.flowret</groupId>
     <artifactId>unify-flowret</artifactId>
-    <version>1.4.3</version>
+    <version>1.4.4</version>
     <packaging>jar</packaging>
 
     <name>unify-flowret</name>
@@ -75,7 +75,7 @@
         <dependency>
             <groupId>com.americanexpress.unify.jdocs</groupId>
             <artifactId>unify-jdocs</artifactId>
-            <version>1.4.0</version>
+            <version>1.5.0</version>
         </dependency>
 
         <!-- test dependencies -->

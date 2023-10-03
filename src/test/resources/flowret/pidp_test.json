@@ -1,0 +1,90 @@
+{
+  "journey": {
+    "name": "parallel_in_dyn_parallel_test",
+    "tickets": [
+      {
+        "name": "reset",
+        "step": "start"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "pcn",
+        "type": "string",
+        "value": "pcn1"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "s1_c",
+        "next": "r1"
+      },
+      {
+        "name": "r1",
+        "type": "p_route_dynamic",
+        "component": "r1_c",
+        "next": "r1_s1"
+      },
+      {
+        "name": "r1_s1",
+        "component": "r1_s1_c",
+        "next": "r2"
+      },
+      {
+        "name": "r2",
+        "type": "p_route",
+        "component": "r2_c",
+        "branches": [
+          {
+            "name": "1",
+            "next": "r2_1_s1"
+          },
+          {
+            "name": "2",
+            "next": "r2_2_s1"
+          },
+          {
+            "name": "3",
+            "next": "r2_3_s1"
+          }
+        ]
+      },
+      {
+        "name": "r2_1_s1",
+        "component": "r2_1_s1_c",
+        "next": "j2"
+      },
+      {
+        "name": "r2_2_s1",
+        "component": "r2_2_s1_c",
+        "next": "j2"
+      },
+      {
+        "name": "r2_3_s1",
+        "component": "r2_3_s1_c",
+        "next": "j2"
+      },
+      {
+        "name": "j2",
+        "type": "p_join",
+        "next": "r1_s2"
+      },
+      {
+        "name": "r1_s2",
+        "component": "r1_s2_c",
+        "next": "j1"
+      },
+      {
+        "name": "j1",
+        "type": "p_join",
+        "next": "s2"
+      },
+      {
+        "name": "s2",
+        "component": "s2_c",
+        "next": "end"
+      }
+    ]
+  }
+}

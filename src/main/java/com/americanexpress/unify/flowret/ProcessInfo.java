@@ -54,7 +54,7 @@ public class ProcessInfo {
 
   // this variable is populated while writing and is for trouble shooting and information only
   // this variable is not used while reading the document
-  private Unit lastUnitExecuted = null;
+  private volatile Unit lastUnitExecuted = null;
 
   protected volatile boolean isPendAtSameStep = false;
 

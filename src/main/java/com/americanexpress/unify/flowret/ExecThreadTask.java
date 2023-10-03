@@ -773,24 +773,16 @@ public class ExecThreadTask implements Runnable {
     // run threads and wait for them to finish
     runThreads(tasks);
 
-    // check if all have completed
-    boolean isPend = false;
-    String joinPoint = null;
-    for (int i = 0; i < tasks.length; i++) {
-      ExecThreadTask in = tasks[i];
+    // we now check if there has been a pend in any of the levels that this thread has called. A pend
+    // can not only occur in one of the threads created by this thread but can exist many levels deep
+    if (pi.getPendExecPath().isEmpty() == true) {
+      // no pend occurred -> return the join point
+      ExecThreadTask in = tasks[0];
       ExecPath ep = in.execPath;
-      joinPoint = ep.getStep();
-
-      if (ep.getPendWorkBasket().isEmpty() == false) {
-        isPend = true;
-        break;
-      }
-    }
-
-    if (isPend == false) {
-      return joinPoint;
+      return ep.getStep();
     }
     else {
+      // a pend occurred somewhere in the hierarchy
       return null;
     }
   }
