@@ -47,6 +47,7 @@ public class TestUtils {
     return s;
   }
 
+  // trim lines
   public static String trimLines(String s) {
     String[] lines = s.split("\n");
     s = "";
