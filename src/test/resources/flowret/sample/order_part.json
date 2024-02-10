@@ -1,0 +1,64 @@
+{
+  "journey": {
+    "name": "order_part",
+    "tickets": [
+      {
+        "name": "cancel_order",
+        "step": "step_4"
+      }
+    ],
+    "process_variables": [
+      {
+        "name": "user",
+        "type": "string",
+        "value": "Jack",
+        "comment": "The name of the person who has raised this order"
+      }
+    ],
+    "flow": [
+      {
+        "name": "start",
+        "component": "start",
+        "next": "step_1"
+      },
+      {
+        "name": "step_1",
+        "type": "step",
+        "component": "get_part_info",
+        "user_data": "Any data can go here",
+        "next": "step_2",
+        "comment": "Get detailed information for the requested part"
+      },
+      {
+        "name": "step_2",
+        "component": "get_part_inventory",
+        "next": "route_1"
+      },
+      {
+        "name": "route_1",
+        "type": "s_route",
+        "component": "is_part_available",
+        "branches": [
+          {
+            "name": "Yes",
+            "next": "step_3"
+          },
+          {
+            "name": "No",
+            "next": "step_4"
+          }
+        ]
+      },
+      {
+        "name": "step_3",
+        "component": "ship_part",
+        "next": "end"
+      },
+      {
+        "name": "step_4",
+        "component": "cancel_order",
+        "next": "end"
+      }
+    ]
+  }
+}

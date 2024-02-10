@@ -20,7 +20,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.4.4</version>
+<version>1.5.0</version>
 ````
 
 ---
@@ -174,18 +174,187 @@ is_complete as false and a timestamp which is x units exceeded
 (as per application needs) and could resume such cases in a batch mode
 
 #### SLA and work management
+
 1. Maintains information of work baskets into which cases are parked
-1. Provides a work manager which can be used to switch work baskets for a case and carry out actions
-on change of a work basket
-1. Provides an SLA manager which can be used to define, enqueue and dequeue SLA milestones automatically
-based on the SLA configuration defined
+1. Provides a work manager which can be used to switch work baskets for a case and carry out actions on change of a work
+   basket
+1. Provides an SLA manager which can be used to define, enqueue and dequeue SLA milestones automatically based on the
+   SLA configuration defined
+
+---
+
+#### Getting started in 5 minutes
+
+Please refer to the packages `com.americanexpress.unify.flowret.sample` and `/resources/flowret/sample` in the test
+folder. All Java class files and resources described below can be found there. You can also run the sample by running
+the file `FlowretSample.java`.
+
+In case you would like to create your own project and copy the sample files there, please note the following:
+
+1. Make sure that unify-flowret dependency is downloaded and on the class path
+2. Make sure that log4j2.json is found in the root of the resources path of your project. You can take a sample from the
+   location `/resources/log4j2.json` in the test folder
+
+##### Step 1: Create a process definition file
+
+Please refer to the file `/resources/flowret/sample/order_part.json` under the test folder. The contents of this file
+are the same as the contents of the process flow as defined in the next section "Defining a process".
+
+##### Step 2: Create an object to persist Flowret data
+
+Please refer to the file `com.americanexpress.unify.flowret.sample.SampleDao.java` in the test folder.
+
+This object is used by Flowret to read from / to the data store. The data store may be an RDBMS, a NoSQL or for simple
+testing even a file system. In our sample, this object reads and writes from / to a file system.
+
+This is Flowret's way of saying - "Give me an object which I can use to persist my state and audit data".
+
+You will note that this object expects to be provided a path to a valid directory on the file system. More on this later
+in step 7.
+
+##### Step 3: Create a sample step
+
+Please refer to the file `com.americanexpress.unify.flowret.sample.SampleStep.java` in the test folder.
+
+This is the object returned by a component factory and represents a step to be executed. This object implements
+the `InvokableStep` interface.
+
+This is Flowret's way of saying - "Give me an object that represents a step I want to execute on which I can call
+the `executeStep` method".
+
+You will note here that we have a single class file to represent all steps in the process definition. In reality,
+applications may have one class for one step.
+
+##### Step 4: Create a sample route
+
+Please refer to the file `com.americanexpress.unify.flowret.sample.SampleRoute.java` in the test folder.
+
+This is the object returned by a component factory and represents a route to be executed. This object implements
+the `InvokableRoute` interface.
+
+This is Flowret's way of saying - "Give me an object that represents a route I want to execute on which I can call
+the `executeRoute` method".
+
+Again, you will note here that we have a single class file to represent all routes in the process definition. In
+reality, applications may have one class per route.
+
+##### Step 5: Create a sample component factory
+
+Please refer to the file `com.americanexpress.unify.flowret.sample.SampleComponentFactory.java` in the test folder.
+
+This is the object which is invoked by Flowret whenever it wants to execute a step or a route. Flowret tells this object
+what type of entity is being run e.g. a step or a route (via the process context variable). In return, it expects to be
+returned an object of the right type i.e. an object which implements `InvokableStep` in case of a step (`SampleStep` in
+our example) and an object which implements `InvokableRoute` in case of a route
+(`SampleRoute` in our example).
+
+This is Flowret's way of saying - "Give me a factory which I can call to get a Step or a Route to execute".
+
+##### Step 6: Create a sample event handler
+
+Please refer to the file `com.americanexpress.unify.flowret.sample.SampleEventHandler.java` in the test folder.
+
+This is the object to which Flowret delivers the case lifecycle events like ON_PROCESS_START etc. This object implements
+the `EventHandler` interface.
+
+This is Flowret's way of saying - "Give me an object to which I can deliver case lifecycle events".
+
+##### Step 7: Create a main program and run the sample process
+
+***When you run this program, the first thing it does is delete all files in the directory specified. Hence please take
+care to not point it to a directory where you may have content.***
+
+Please refer to the file `com.americanexpress.unify.flowret.sample.FlowretSample.java` in the test folder.
+
+Please note the following:
+
+1. The directory path used for reading and writing Flowret files is `C:/Temp/flowret/`. You can change it to whatever
+   works for you. Note that this is a Windows path. If you are on Mac, please change this path accordingly
+2. The directory path should be a valid path and should already exist. Ideally, you want to to make sure it is empty to
+   start with
+
+###### Initialize Flowret
+
+```java
+ERRORS_FLOWRET.load();
+        Flowret.init(10,30000,"-");
+        Flowret.instance().setWriteAuditLog(true);
+        Flowret.instance().setWriteProcessInfoAfterEachStep(true);
+```
+
+###### Wire up objects and get runtime service
+
+```java
+SampleFlowretDao dao=new SampleFlowretDao(DIR_PATH);
+        SampleComponentFactory factory=new SampleComponentFactory();
+        SampleEventHandler handler=new SampleEventHandler();
+        Rts rts=Flowret.instance().getRunTimeService(dao,factory,handler,null);
+```
+
+###### Get process definition and start the case
+
+Note that we start a case with case id as 1.
+
+```java
+String json=BaseUtils.getResourceAsString(FlowretSample.class,"/flowret/sample/order_part.json");
+        rts.startCase("1",json,null,null);
+
+        try{
+        while(true){
+        logger.info("\n");
+        rts.resumeCase("1");
+        }
+        }
+        catch(UnifyException e){
+        logger.error("Exception -> "+e.getMessage());
+        }
+```
+
+Note that we have a while loop that tries to resume the case till it hits an exception. This is to resume the case
+multiple times in case of more than one pends (one resume for each pend) and take the case to completion.
+
+You can see the logs in the console which will tell you of the progress. You may safely ignore the last exception
+message shown below.
+
+```java
+[americanexpress.unify.flowret.sample.FlowretSample]ERROR:Exception->Cannot resume a case that has already completed.Case id->1
+```
+
+##### Step 8: Experiment a bit
+
+Try suppressing the writing of `flowret_audit_log` files by specifying below in `FlowretSample.java`:
+
+```java
+Flowret.instance().setWriteAuditLog(false);
+```
+
+Return a pend from a step and see what happens. You can refer to below code (already available as commented
+in `SampleStep.java` file):
+
+```java
+if(compName.equals("get_part_info")){
+        return new StepResponse(UnitResponseType.OK_PEND,"","SOME_WORK_BASKET");
+        }
+```
+
+Return an error pend randomly 50% of the time. The program will resume the case till there is no pend and take it to
+completion.
+
+```java
+int value=new Random().nextInt(2);
+        if(value==0){
+        return new StepResponse(UnitResponseType.OK_PROCEED,"","");
+        }
+        else{
+        return new StepResponse(UnitResponseType.ERROR_PEND,"","ERROR_WORK_BASKET");
+        }
+```
 
 ---
 
 #### Defining a process
 
-A process is defined in a JSON file. Consider a simple workflow to order a specific 
-part:
+A process is defined in a JSON file. Consider a simple workflow to order a specific part:
 
 ![Simple Workflow](simple_workflow.png)
 

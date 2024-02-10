@@ -16,6 +16,7 @@ package com.americanexpress.unify.flowret.test_singular;
 
 import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.flowret.*;
+import org.junit.jupiter.api.*;
 
 import java.io.File;
 
@@ -27,40 +28,52 @@ public class TestSampleProgram {
   private static String dirPath = "./target/test-data-results/";
   private static Rts rts = null;
 
-  public static void main(String[] args) {
+  @BeforeAll
+  protected static void beforeAll() {
     File directory = new File(dirPath);
     if (!directory.exists()) {
       directory.mkdir();
     }
-    TestUtils.deleteFiles(dirPath);
-
     ERRORS_FLOWRET.load();
     Flowret.init(10, 30000, "-");
-    StepResponseFactory.clear();
-
-    // foo1("test_journey_wms");
-    // foo2("test_journey_wms");
-    foo3("test_journey_1");
-
-    Flowret.instance().close();
   }
 
-  private static void foo1(String journey) {
+  @BeforeEach
+  protected void beforeEach() {
+    TestUtils.deleteFiles(dirPath);
+    StepResponseFactory.clear();
+  }
+
+  @AfterEach
+  protected void afterEach() {
+    // nothing to do
+  }
+
+  @AfterAll
+  protected static void afterAll() {
+    Flowret.instance().close();
+    TestUtils.deleteFiles(dirPath);
+  }
+
+  @Test
+  void testScenario1() {
     setScenario1();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourneyWithWms1(journey);
+    runJourneyWithWms1("test_journey_wms");
   }
 
-  private static void foo2(String journey) {
+  @Test
+  void testScenario2() {
     setScenario2();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourneyWithWms2(journey);
+    runJourneyWithWms2("test_journey_wms");
   }
 
-  private static void foo3(String journey) {
+  @Test
+  void testScenario3() {
     setScenario3();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourneyWithoutWms(journey);
+    runJourneyWithoutWms("test_journey_1");
   }
 
   private static void runJourneyWithWms1(String journey) {
@@ -138,7 +151,7 @@ public class TestSampleProgram {
     StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
   }
 
-  public static void setScenario3() {
+  private static void setScenario3() {
     StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
   }
 

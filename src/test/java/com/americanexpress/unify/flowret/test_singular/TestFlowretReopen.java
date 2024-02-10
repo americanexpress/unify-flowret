@@ -31,21 +31,14 @@ import java.util.List;
  */
 public class TestFlowretReopen {
 
-  private static String dirPath = null;
+  private static String dirPath = "./target/test-data-results/";
   private static Rts rts = null;
 
   @BeforeAll
   protected static void setEnv() {
-    dirPath = System.getenv("TestFlowretDirPath");
-    if (dirPath == null) {
-      //      System.out.println("Please specify directory path as a system property");
-      //      System.out.println("Do not forget to supply the trailing /  e.g. C:/Temp/");
-      //      System.exit(1);
-      dirPath = "./target/test-data-results2/";
-      File directory = new File(dirPath);
-      if (!directory.exists()) {
-        directory.mkdir();
-      }
+    File directory = new File(dirPath);
+    if (!directory.exists()) {
+      directory.mkdir();
     }
 
     ERRORS_FLOWRET.load();
@@ -54,12 +47,14 @@ public class TestFlowretReopen {
 
   @BeforeEach
   protected void beforeEach() {
+    TestUtils.deleteFiles(dirPath);
     StepResponseFactory.clear();
   }
 
   @AfterAll
   protected static void close() {
     Flowret.instance().close();
+    TestUtils.deleteFiles(dirPath);
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {

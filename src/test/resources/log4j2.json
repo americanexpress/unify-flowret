@@ -1,0 +1,26 @@
+{
+  "configuration": {
+    "shutdownHook": "disable",
+    "appenders": {
+      "appender": [
+        {
+          "type": "Console",
+          "name": "stdout",
+          "target": "SYSTEM_OUT",
+          "PatternLayout": {
+            "pattern": "[%-50.50c] %-5level: %m%n"
+          }
+        }
+      ]
+    },
+    "loggers": {
+      "root": {
+        "level": "info",
+        "additivity": "true",
+        "AppenderRef": {
+          "ref": "stdout"
+        }
+      }
+    }
+  }
+}

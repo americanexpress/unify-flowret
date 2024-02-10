@@ -859,6 +859,11 @@ public class ExecThreadTask implements Runnable {
   }
 
   private StepResponse executeStep(Step step) {
+    String stepName = step.getName();
+    if (stepName.equals("start") == true) {
+      return new StepResponse(UnitResponseType.OK_PROCEED, null, null);
+    }
+
     StepResponse sr = null;
     ProcessContext pc = null;
 
