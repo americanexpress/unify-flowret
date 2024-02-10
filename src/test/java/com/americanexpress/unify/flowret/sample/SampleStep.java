@@ -36,6 +36,10 @@ public class SampleStep implements InvokableStep {
   public StepResponse executeStep() {
     String compName = pc.getCompName();
 
+    if (compName.equals("start")) {
+      return new StepResponse(UnitResponseType.OK_PROCEED, "", "");
+    }
+
     if (compName.equals("get_part_info")) {
       return new StepResponse(UnitResponseType.OK_PROCEED, "", "");
 
