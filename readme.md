@@ -20,7 +20,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.7.0</version>
+<version>1.7.1</version>
 ````
 
 ---
@@ -370,11 +370,12 @@ private static boolean writeToConsole = false;
 ``` 
 
 Turning on the ```writeFiles``` variable will write the process info and audit log files to the directory specified.
-Note that there is a sub directory created for each test case class and inside that for each test case.
+Note that there is a subdirectory created for each test case class and inside that for each test case.
 It would be your responsibility to clean up any contents in these directories should you want to do so.
 
 Turning on the ```writeToConsole``` will output the log messages to console. This is useful when you want to see the
 progress of the test case execution.
+
 ---
 
 #### Defining a process
