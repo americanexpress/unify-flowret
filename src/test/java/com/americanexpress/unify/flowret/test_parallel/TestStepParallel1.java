@@ -38,7 +38,7 @@ public class TestStepParallel1 implements InvokableStep {
     String stepName = pc.getStepName();
     if (stepName.equals("step_wait_1") || stepName.equals("step_wait_2") || stepName.equals("step_wait_3")) {
       try {
-        Thread.sleep(10000);
+        Thread.sleep(1000);
       }
       catch (InterruptedException e) {
         e.printStackTrace();

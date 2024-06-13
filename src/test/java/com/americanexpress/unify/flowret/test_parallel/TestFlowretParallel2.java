@@ -18,47 +18,37 @@ import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
 import com.americanexpress.unify.flowret.test_singular.TestFlowret;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.lang.invoke.MethodHandles;
 
 /*
  * @author Deepak Arora
  */
 public class TestFlowretParallel2 {
 
-  private static String dirPath = "./target/test-data-results/";
+  private static String baseDirPath = "./target/test-data-results/";
   private static Rts rts = null;
-  private static FileDao dao = null;
-  private static ProcessComponentFactory factory = null;
-  private static EventHandler handler = null;
+  private static String simpleClassName = MethodHandles.lookup().lookupClass().getSimpleName();
+
+  // set to true if you want to log to disk to trouble shoot any specific test case
+  private static boolean writeFiles = false;
+
+  // set to true if you want to log to console
+  private static boolean writeToConsole = false;
 
   @BeforeAll
-  protected static void setEnv() throws Exception {
-    File directory = new File(dirPath);
-    if (!directory.exists()) {
-      directory.mkdir();
-    }
-
-    ERRORS_FLOWRET.load();
-    Flowret.init(30000, "-");
+  protected static void beforeAll() {
+    TestManager.init(System.out, new ByteArrayOutputStream(), 0, 30000);
   }
 
   @BeforeEach
   protected void beforeEach() {
-    TestUtils.deleteFiles(dirPath);
+    TestManager.reset();
     StepResponseFactory.clear();
-  }
-
-  @AfterEach
-  protected void afterEach() {
-    // nothing to do
-  }
-
-  @AfterAll
-  protected static void afterAll() {
-    Flowret.instance().close();
-    TestUtils.deleteFiles(dirPath);
   }
 
   // 3 branches, happy path i.e. all branches proceed
@@ -70,9 +60,9 @@ public class TestFlowretParallel2 {
     rts = Flowret.instance().getRunTimeService(dao, factory, handler, sqm);
   }
 
-  private static void runJourney(String journey) {
+  private static void runJourney(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
-    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+    if (dao.read("flowret_process_info-1.json") == null) {
       rts.startCase("1", json, null, null);
     }
 
@@ -89,9 +79,15 @@ public class TestFlowretParallel2 {
 
   @Test
   void testScenario1() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario1();
-    init(new FileDao(dirPath), new TestComponentFactoryParallel1(), new TestHandler(), null);
-    runJourney("parallel_test_1");
+    init(dao, new TestComponentFactoryParallel1(), new TestHandler(), null);
+    runJourney("parallel_test_1", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEqualsTodo(writeToConsole, simpleClassName + "." + methodName, null);
   }
 
 }

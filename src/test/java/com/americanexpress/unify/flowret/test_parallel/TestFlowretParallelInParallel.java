@@ -19,73 +19,37 @@ import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
 import com.americanexpress.unify.flowret.test_singular.TestFlowret;
 import com.americanexpress.unify.jdocs.ERRORS_JDOCS;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.lang.invoke.MethodHandles;
 
 /*
  * @author Deepak Arora
  */
 public class TestFlowretParallelInParallel {
 
-  private static String dirPath = "./target/test-data-results/";
+  private static String baseDirPath = "./target/test-data-results/";
   private static Rts rts = null;
-  private static FileDao dao = null;
-  private static ProcessComponentFactory factory = null;
-  private static EventHandler handler = null;
-  private static PrintStream previousConsole = null;
-  private static ByteArrayOutputStream newConsole = null;
+  private static String simpleClassName = MethodHandles.lookup().lookupClass().getSimpleName();
 
-  private void myAssertEquals(String testCase, String resourcePath) {
-    String output = newConsole.toString();
-    String s = output;
-    output = TestUtils.getSortedWithoutCrLf(output);
-    String expected = BaseUtils.getResourceAsString(TestFlowret.class, resourcePath);
-    expected = TestUtils.getSortedWithoutCrLf(expected);
-    assertEquals(expected, output);
-    previousConsole.println();
-    previousConsole.println();
-    previousConsole.println("*********************** " + testCase + " ***********************");
-    previousConsole.println();
-    previousConsole.println(s);
-  }
+  // set to true if you want to log to disk to trouble shoot any specific test case
+  private static boolean writeFiles = false;
+
+  // set to true if you want to log to console
+  private static boolean writeToConsole = false;
 
   @BeforeAll
-  protected static void setEnv() throws Exception {
-    previousConsole = System.out;
-    newConsole = new ByteArrayOutputStream();
-    System.setOut(new PrintStream(newConsole));
-
-    File directory = new File(dirPath);
-    if (!directory.exists()) {
-      directory.mkdir();
-    }
-
-    ERRORS_FLOWRET.load();
-    Flowret.init(20, 30000, "-");
+  protected static void beforeAll() {
+    TestManager.init(System.out, new ByteArrayOutputStream(), 20, 30000);
   }
 
   @BeforeEach
   protected void beforeEach() {
-    TestUtils.deleteFiles(dirPath);
+    TestManager.reset();
     StepResponseFactory.clear();
-    newConsole.reset();
-  }
-
-  @AfterEach
-  protected void afterEach() {
-    // nothing to do
-  }
-
-  @AfterAll
-  protected static void afterAll() {
-    System.setOut(previousConsole);
-    Flowret.instance().close();
-    TestUtils.deleteFiles(dirPath);
   }
 
   public static void setScenario1() {
@@ -97,10 +61,10 @@ public class TestFlowretParallelInParallel {
     rts = Flowret.instance().getRunTimeService(dao, factory, handler, sqm);
   }
 
-  private static void runJourney(String journey) {
+  private static void runJourney(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
     Utils.validateJourneyDefinition(json);
-    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+    if (dao.read("flowret_process_info-1.json") == null) {
       rts.startCase("1", json, null, null);
     }
 
@@ -117,10 +81,15 @@ public class TestFlowretParallelInParallel {
 
   @Test
   void testScenario1() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario1();
-    init(new FileDao(dirPath), new TestComponentFactoryParallelInParallel(), new TestHandler(), null);
-    runJourney("parallel_in_parallel");
-    myAssertEquals("testScenario1", "/flowret/test_parallel_in_parallel/test_scenario_1_expected.txt");
+    init(dao, new TestComponentFactoryParallelInParallel(), new TestHandler(), null);
+    runJourney("parallel_in_parallel", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals2(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_parallel_in_parallel/test_scenario_1_expected.txt");
   }
 
 }

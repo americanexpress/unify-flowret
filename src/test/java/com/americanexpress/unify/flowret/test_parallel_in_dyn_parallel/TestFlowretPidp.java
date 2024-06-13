@@ -17,43 +17,37 @@ package com.americanexpress.unify.flowret.test_parallel_in_dyn_parallel;
 import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.lang.invoke.MethodHandles;
 
 /*
  * @author Deepak Arora
  */
 public class TestFlowretPidp {
 
-  private static String dirPath = "./target/test-data-results/";
+  private static String baseDirPath = "./target/test-data-results/";
   private static Rts rts = null;
+  private static String simpleClassName = MethodHandles.lookup().lookupClass().getSimpleName();
+
+  // set to true if you want to log to disk to trouble shoot any specific test case
+  private static boolean writeFiles = false;
+
+  // set to true if you want to log to console
+  private static boolean writeToConsole = false;
 
   @BeforeAll
-  protected static void setEnv() throws Exception {
-    File directory = new File(dirPath);
-    if (!directory.exists()) {
-      directory.mkdir();
-    }
-
-    ERRORS_FLOWRET.load();
-    Flowret.init(10, 30000, "-");
+  protected static void beforeAll() {
+    TestManager.init(System.out, new ByteArrayOutputStream(), 10, 30000);
   }
 
   @BeforeEach
   protected void beforeEach() {
-    TestUtils.deleteFiles(dirPath);
+    TestManager.reset();
     StepResponseFactory.clear();
-  }
-
-  @AfterEach
-  protected void afterEach() {
-    // nothing to do
-  }
-
-  @AfterAll
-  protected static void afterAll() {
-    Flowret.instance().close();
   }
 
   // happy path
@@ -66,10 +60,10 @@ public class TestFlowretPidp {
     StepResponseFactory.addResponse("r2_1_s1", UnitResponseType.ERROR_PEND, "tech", "");
   }
 
-  private static void runJourney(String journey) {
+  private static void runJourney(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowretPidp.class, "/flowret/" + journey + ".json");
 
-    if (new File(dirPath + "flowret_journey-3.json ").exists() == false) {
+    if (dao.read("flowret_journey-3.json ") == null) {
       rts.startCase("3", json, null, null);
     }
 
@@ -91,16 +85,28 @@ public class TestFlowretPidp {
 
   @Test
   void testScenario0() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario0();
-    init(new FileDao(dirPath), new TestComponentFactoryPidp(), new TestHandler(), null);
-    runJourney("pidp_test");
+    init(dao, new TestComponentFactoryPidp(), new TestHandler(), null);
+    runJourney("pidp_test", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEqualsTodo(writeToConsole, simpleClassName + "." + methodName, null);
   }
 
   @Test
   void testScenario1() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario1();
-    init(new FileDao(dirPath), new TestComponentFactoryPidp(), new TestHandler(), null);
-    runJourney("pidp_test");
+    init(dao, new TestComponentFactoryPidp(), new TestHandler(), null);
+    runJourney("pidp_test", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEqualsTodo(writeToConsole, simpleClassName + "." + methodName, null);
   }
 
 }

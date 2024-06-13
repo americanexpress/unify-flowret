@@ -17,15 +17,14 @@ package com.americanexpress.unify.flowret.test_singular;
 import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.PrintStream;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /*
  * @author Deepak Arora
@@ -37,52 +36,32 @@ public class TestFlowret {
   // contents of the expected file is being trimmed. This does not happen if we use Notepad++ to
   // save the contents of the expected files
 
-  private static String dirPath = "./target/test-data-results/";
+  private static String baseDirPath = "./target/test-data-results/";
   private static Rts rts = null;
-  private static PrintStream previousConsole = null;
-  private static ByteArrayOutputStream newConsole = null;
+  private static String simpleClassName = MethodHandles.lookup().lookupClass().getSimpleName();
+
+  // set to true if you want to log to disk to trouble shoot any specific test case
+  private static boolean writeFiles = false;
+
+  // set to true if you want to log to console
+  private static boolean writeToConsole = false;
 
   @BeforeAll
-  protected static void setEnv() {
-    previousConsole = System.out;
-    newConsole = new ByteArrayOutputStream();
-    System.setOut(new PrintStream(newConsole));
-
-    File directory = new File(dirPath);
-    if (!directory.exists()) {
-      directory.mkdir();
-    }
-
-    ERRORS_FLOWRET.load();
-    Flowret.init(10, 30000, "-");
-    //    Flowret.instance().setWriteAuditLog(false);
-    //    Flowret.instance().setWriteProcessInfoAfterEachStep(false);
+  protected static void beforeAll() {
+    TestManager.init(System.out, new ByteArrayOutputStream(), 10, 30000);
   }
 
   @BeforeEach
   protected void beforeEach() {
-    TestUtils.deleteFiles(dirPath);
+    TestManager.reset();
     StepResponseFactory.clear();
-    newConsole.reset();
-  }
-
-  @AfterEach
-  protected void afterEach() {
-    // nothing to do
-  }
-
-  @AfterAll
-  protected static void afterAll() {
-    System.setOut(previousConsole);
-    Flowret.instance().close();
-    TestUtils.deleteFiles(dirPath);
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {
     rts = Flowret.instance().getRunTimeService(dao, factory, handler, sqm);
   }
 
-  private static void runJourney(String journey) {
+  private static void runJourney(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
     String slaJson = null;
 
@@ -93,7 +72,7 @@ public class TestFlowret {
       // nothing to do
     }
 
-    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+    if (dao.read("flowret_process_info-1.json") == null) {
       rts.startCase("1", json, null, slaJson);
     }
 
@@ -108,7 +87,7 @@ public class TestFlowret {
     }
   }
 
-  private static void runJourneyWms(String journey) {
+  private static void runJourneyWms(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
     String slaJson = null;
 
@@ -119,17 +98,17 @@ public class TestFlowret {
       // nothing to do
     }
 
-    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+    if (dao.read("flowret_process_info-1.json") == null) {
       rts.startCase("1", json, null, slaJson);
     }
 
-    Wms wms = Flowret.instance().getWorkManagementService(new FileDao(dirPath), new TestWorkManager(), new TestSlaQueueManager());
+    Wms wms = Flowret.instance().getWorkManagementService(dao, new TestWorkManager(), new TestSlaQueueManager());
     wms.changeWorkBasket("1", "wb_2");
 
     rts.resumeCase("1");
   }
 
-  private static void runJourneyWms1(String journey) {
+  private static void runJourneyWms1(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
     String slaJson = null;
 
@@ -140,11 +119,11 @@ public class TestFlowret {
       // nothing to do
     }
 
-    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+    if (dao.read("flowret_process_info-1.json") == null) {
       rts.startCase("1", json, null, slaJson);
     }
 
-    Wms wms = Flowret.instance().getWorkManagementService(new FileDao(dirPath), new TestWorkManager(), new TestSlaQueueManager());
+    Wms wms = Flowret.instance().getWorkManagementService(dao, new TestWorkManager(), new TestSlaQueueManager());
     wms.changeWorkBasket("1", "wb_2");
     wms.changeWorkBasket("1", "wb_3");
     wms.changeWorkBasket("1", "wb_4");
@@ -228,137 +207,193 @@ public class TestFlowret {
     StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
   }
 
-  private void myAssertEquals(String testCase, String resourcePath) {
-    String s = newConsole.toString();
-    String output = TestUtils.trimLines(BaseUtils.getWithoutCarriageReturn(s));
-    String expected = BaseUtils.getResourceAsString(TestFlowret.class, resourcePath);
-    expected = TestUtils.trimLines(BaseUtils.getWithoutCarriageReturn(expected));
-    assertEquals(expected, output);
-    previousConsole.println();
-    previousConsole.println();
-    previousConsole.println("*********************** " + testCase + " ***********************");
-    previousConsole.println();
-    previousConsole.println(s);
-  }
-
   @Test
   void testClean() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     List<String> branches = new ArrayList<>();
     branches.add("yes");
     RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testClean", "/flowret/test_singular/test_clean_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_clean_expected.txt");
   }
 
   @Test
   void testScenario1() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario1();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testScenario1", "/flowret/test_singular/test_scenario_1_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_1_expected.txt");
   }
 
   @Test
   void testScenario1WithSla() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario1();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourney("test_journey");
-    myAssertEquals("testScenario1WithSla", "/flowret/test_singular/test_scenario_1_sla_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_1_sla_expected.txt");
   }
 
   @Test
   void testScenario2() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario2();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testScenario2", "/flowret/test_singular/test_scenario_2_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_2_expected.txt");
   }
 
   @Test
   void testScenario2WithSla() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario2();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourney("test_journey");
-    myAssertEquals("testScenario2WithSla", "/flowret/test_singular/test_scenario_2_sla_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_2_sla_expected.txt");
   }
 
   @Test
   void testScenario3() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario3();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testScenario3", "/flowret/test_singular/test_scenario_3_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_3_expected.txt");
   }
 
   @Test
   void testScenario3WithSla() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario3();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourney("test_journey");
-    myAssertEquals("testScenario3WithSla", "/flowret/test_singular/test_scenario_3_sla_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_3_sla_expected.txt");
   }
 
   @Test
   void testScenario4() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario4();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testScenario4", "/flowret/test_singular/test_scenario_4_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_4_expected.txt");
   }
 
   @Test
   void testScenario4WithSla() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario4();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourney("test_journey");
-    myAssertEquals("testScenario4WithSla", "/flowret/test_singular/test_scenario_4_sla_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_4_sla_expected.txt");
   }
 
   @Test
   void testScenario5() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario5();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testScenario5", "/flowret/test_singular/test_scenario_5_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_5_expected.txt");
   }
 
   @Test
   void testScenario6() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario6();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourneyWms("test_journey_wms");
-    myAssertEquals("testScenario6", "/flowret/test_singular/test_scenario_6_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourneyWms("test_journey_wms", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_6_expected.txt");
   }
 
   @Test
   void testScenario7() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     setScenario7();
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourneyWms1("test_journey_wms");
-    myAssertEquals("testScenario7", "/flowret/test_singular/test_scenario_7_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourneyWms1("test_journey_wms", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_scenario_7_expected.txt");
   }
 
   @Test
   void testPersist() {
-    // set responses todo
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourney("test_persist");
-    myAssertEquals("testPersist", "/flowret/test_singular/test_persist_expected.txt");
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourney("test_persist", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_persist_expected.txt");
   }
 
   @Test
   void testResume() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     List<String> branches = new ArrayList<>();
     branches.add("yes");
     RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), null);
-    runJourney("test_journey");
-    myAssertEquals("testResume", "/flowret/test_singular/test_resume_expected.txt");
+    init(dao, new TestComponentFactory(), new TestHandler(), null);
+    runJourney("test_journey", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEquals1(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_singular/test_resume_expected.txt");
   }
 
 }

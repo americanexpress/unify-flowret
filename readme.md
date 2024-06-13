@@ -20,7 +20,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.6.0</version>
+<version>1.7.0</version>
 ````
 
 ---
@@ -277,18 +277,18 @@ Please note the following:
 
 ```java
 ERRORS_FLOWRET.load();
-        Flowret.init(10,30000,"-");
-        Flowret.instance().setWriteAuditLog(true);
-        Flowret.instance().setWriteProcessInfoAfterEachStep(true);
+Flowret.init(10, 30000, "-");
+Flowret.instance().setWriteAuditLog(true);
+Flowret.instance().setWriteProcessInfoAfterEachStep(true);
 ```
 
 ###### Wire up objects and get runtime service
 
 ```java
-SampleFlowretDao dao=new SampleFlowretDao(DIR_PATH);
-        SampleComponentFactory factory=new SampleComponentFactory();
-        SampleEventHandler handler=new SampleEventHandler();
-        Rts rts=Flowret.instance().getRunTimeService(dao,factory,handler,null);
+SampleFlowretDao dao = new SampleFlowretDao(DIR_PATH);
+SampleComponentFactory factory = new SampleComponentFactory();
+SampleEventHandler handler = new SampleEventHandler();
+Rts rts = Flowret.instance().getRunTimeService(dao, factory, handler, null);
 ```
 
 ###### Get process definition and start the case
@@ -296,18 +296,17 @@ SampleFlowretDao dao=new SampleFlowretDao(DIR_PATH);
 Note that we start a case with case id as 1.
 
 ```java
-String json=BaseUtils.getResourceAsString(FlowretSample.class,"/flowret/sample/order_part.json");
-        rts.startCase("1",json,null,null);
-
-        try{
-        while(true){
-        logger.info("\n");
-        rts.resumeCase("1");
-        }
-        }
-        catch(UnifyException e){
-        logger.error("Exception -> "+e.getMessage());
-        }
+String json = BaseUtils.getResourceAsString(FlowretSample.class, "/flowret/sample/order_part.json");
+rts.startCase("1", json, null, null);
+try {
+   while (true) {
+     logger.info("\n");
+     rts.resumeCase("1");
+   }
+}
+catch (UnifyException e) {
+  logger.error("Exception -> " + e.getMessage());
+}
 ```
 
 Note that we have a while loop that tries to resume the case till it hits an exception. This is to resume the case
@@ -317,7 +316,7 @@ You can see the logs in the console which will tell you of the progress. You may
 message shown below.
 
 ```java
-[americanexpress.unify.flowret.sample.FlowretSample]ERROR:Exception->Cannot resume a case that has already completed.Case id->1
+[americanexpress.unify.flowret.sample.FlowretSample] ERROR:Exception -> Cannot resume a case that has already completed.Case id -> 1
 ```
 
 ##### Step 8: Experiment a bit
@@ -332,24 +331,50 @@ Return a pend from a step and see what happens. You can refer to below code (alr
 in `SampleStep.java` file):
 
 ```java
-if(compName.equals("get_part_info")){
-        return new StepResponse(UnitResponseType.OK_PEND,"","SOME_WORK_BASKET");
-        }
+if (compName.equals("get_part_info")) {
+  return new StepResponse(UnitResponseType.OK_PEND, "", "SOME_WORK_BASKET");
+}
 ```
 
 Return an error pend randomly 50% of the time. The program will resume the case till there is no pend and take it to
 completion.
 
 ```java
-int value=new Random().nextInt(2);
-        if(value==0){
-        return new StepResponse(UnitResponseType.OK_PROCEED,"","");
-        }
-        else{
-        return new StepResponse(UnitResponseType.ERROR_PEND,"","ERROR_WORK_BASKET");
-        }
+int value = new Random().nextInt(2);
+if (value == 0) {
+  return new StepResponse(UnitResponseType.OK_PROCEED, "", "");
+}
+else {
+  return new StepResponse(UnitResponseType.ERROR_PEND, "", "ERROR_WORK_BASKET");
+}
 ```
 
+##### Step 9: Run unit test cases
+
+Try running the unit tests which are defined under the following folders in the test package:
+
+1. test_singular - single path of execution test cases
+2. test_parallel - parallel processing test cases
+3. test_parallel_dyn - dynamic parallel processing test cases
+4. test_parallel_in_dyn_parallel - parallel processing within dynamic parallel processing test cases
+
+Please note that there are some test cases for which assertions are yet to be done. These test cases can however
+be run and their output examined manually for understanding and correctness. You can identify such
+test cases from the console output when you run all test cases.
+
+Each test case class has the following two variables which are switched off by default:
+
+```java
+private static boolean writeFiles = false;
+private static boolean writeToConsole = false;
+``` 
+
+Turning on the ```writeFiles``` variable will write the process info and audit log files to the directory specified.
+Note that there is a sub directory created for each test case class and inside that for each test case.
+It would be your responsibility to clean up any contents in these directories should you want to do so.
+
+Turning on the ```writeToConsole``` will output the log messages to console. This is useful when you want to see the
+progress of the test case execution.
 ---
 
 #### Defining a process

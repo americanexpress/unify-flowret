@@ -17,12 +17,12 @@ package com.americanexpress.unify.flowret.test_singular;
 import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.*;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
+import java.io.ByteArrayOutputStream;
+import java.lang.invoke.MethodHandles;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,37 +31,32 @@ import java.util.List;
  */
 public class TestFlowretReopen {
 
-  private static String dirPath = "./target/test-data-results/";
+  private static String baseDirPath = "./target/test-data-results/";
   private static Rts rts = null;
+  private static String simpleClassName = MethodHandles.lookup().lookupClass().getSimpleName();
+
+  // set to true if you want to log to disk to trouble shoot any specific test case
+  private static boolean writeFiles = false;
+
+  // set to true if you want to log to console
+  private static boolean writeToConsole = false;
 
   @BeforeAll
-  protected static void setEnv() {
-    File directory = new File(dirPath);
-    if (!directory.exists()) {
-      directory.mkdir();
-    }
-
-    ERRORS_FLOWRET.load();
-    Flowret.init(10, 30000, "-");
+  protected static void beforeAll() {
+    TestManager.init(System.out, new ByteArrayOutputStream(), 10, 30000);
   }
 
   @BeforeEach
   protected void beforeEach() {
-    TestUtils.deleteFiles(dirPath);
+    TestManager.reset();
     StepResponseFactory.clear();
-  }
-
-  @AfterAll
-  protected static void close() {
-    Flowret.instance().close();
-    TestUtils.deleteFiles(dirPath);
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {
     rts = Flowret.instance().getRunTimeService(dao, factory, handler, sqm);
   }
 
-  private static void runJourney(String journey) {
+  private static void runJourney(String journey, MemoryDao dao) {
     String json = BaseUtils.getResourceAsString(TestFlowretReopen.class, "/flowret/" + journey + ".json");
     String slaJson = null;
 
@@ -73,7 +68,7 @@ public class TestFlowretReopen {
     }
 
     ProcessContext pc = null;
-    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+    if (dao.read("flowret_process_info-1.json") == null) {
       pc = rts.startCase("1", json, null, slaJson);
     }
 
@@ -96,14 +91,19 @@ public class TestFlowretReopen {
 
   @Test
   void testClean() {
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
     List<String> branches = new ArrayList<>();
     branches.add("yes");
     RouteResponseFactory.addResponse("route2", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route4", UnitResponseType.OK_PROCEED, branches, null);
     RouteResponseFactory.addResponse("route5", UnitResponseType.OK_PROCEED, branches, null);
-
-    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourney("test_journey_reopen");
+    init(dao, new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    runJourney("test_journey_reopen", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    TestManager.myAssertEqualsTodo(writeToConsole, simpleClassName + "." + methodName, null);
   }
 
 }
