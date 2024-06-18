@@ -37,6 +37,7 @@ public class TestSampleProgram {
     ERRORS_FLOWRET.load();
     Flowret.init(10, 30000, "-");
     StepResponseFactory.clear();
+    RouteResponseFactory.clear();
 
     // foo1("test_journey_wms");
     // foo2("test_journey_wms");

@@ -49,6 +49,7 @@ public class TestFlowretParallel2 {
   protected void beforeEach() {
     TestManager.reset();
     StepResponseFactory.clear();
+    RouteResponseFactory.clear();
   }
 
   // 3 branches, happy path i.e. all branches proceed

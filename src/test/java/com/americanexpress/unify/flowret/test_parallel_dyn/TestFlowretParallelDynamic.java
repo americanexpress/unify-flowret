@@ -47,6 +47,7 @@ public class TestFlowretParallelDynamic {
   protected void beforeEach() {
     TestManager.reset();
     StepResponseFactory.clear();
+    RouteResponseFactory.clear();
   }
 
   public static void setScenario1() {

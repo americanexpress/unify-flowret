@@ -49,6 +49,7 @@ public class TestFlowretParallel1 {
   protected void beforeEach() {
     TestManager.reset();
     StepResponseFactory.clear();
+    RouteResponseFactory.clear();
   }
 
   private static void init(FlowretDao dao, ProcessComponentFactory factory, EventHandler handler, ISlaQueueManager sqm) {

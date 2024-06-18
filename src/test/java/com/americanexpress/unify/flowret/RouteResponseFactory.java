@@ -48,4 +48,8 @@ public class RouteResponseFactory {
     return r;
   }
 
+  public synchronized static void clear() {
+    actions.clear();
+  }
+
 }

@@ -48,6 +48,7 @@ public class TestFlowretPidp {
   protected void beforeEach() {
     TestManager.reset();
     StepResponseFactory.clear();
+    RouteResponseFactory.clear();
   }
 
   // happy path
