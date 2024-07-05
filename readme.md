@@ -20,7 +20,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ````pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.7.2</version>
+<version>1.7.3</version>
 ````
 
 ---
