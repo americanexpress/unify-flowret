@@ -92,7 +92,7 @@ public class Flowret {
     am.idleTimeout = idleTimeout;
 
     if (maxThreads > 0) {
-      BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue(new ArrayBlockingQueue<>(am.maxThreads * 2));
+      BlockOnOfferQueue<Runnable> q = new BlockOnOfferQueue<>(new ArrayBlockingQueue<>(am.maxThreads * 2));
       am.es = new ThreadPoolExecutor(am.maxThreads, am.maxThreads, am.idleTimeout, TimeUnit.MILLISECONDS, q, new RejectedItemHandler());
     }
 

@@ -6,10 +6,21 @@
 ---
 
 #### Whats in a name?
+
 Flowret is derived from the english word "floret" which is in turn derived from the french word "florete".
 The word floret means a small / budding flower. We brought in the component of "flow" into this word
 and named our orchestrator "Flowret". We felt that this resonated well with the nature of the
 orchestrator we have built. It is lightweight, small, a pleasure to use and budding into something beautiful!
+
+Once you have taken a look, if you like what you see, we would very much appreciate a like for the project - it keeps us
+motivated knowing that our
+work is getting traction and helping people in the community.
+
+And while you are here, may we mention another of our offerings which could be of interest:
+
+***Unify-jdocs - a new way of working with JSON documents***
+
+https://github.com/americanexpress/unify-jdocs
 
 ---
 
@@ -17,11 +28,11 @@ orchestrator we have built. It is lightweight, small, a pleasure to use and budd
 
 Flowret is available as a jar file in Maven central with the following Maven coordinates:
 
-````pom
+```pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.7.3</version>
-````
+<version>1.7.4</version>
+```
 
 ---
 

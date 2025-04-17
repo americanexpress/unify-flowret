@@ -686,14 +686,14 @@ public class Utils {
     // validate against model
     if (jd.isTyped() == true) {
       if (jd.getType().equals("flowret_journey") == false) {
-        jd.validate("flowret_journey");
+        jd.validateAllPaths("flowret_journey");
       }
       else {
         // nothing to do as it must already be validated
       }
     }
     else {
-      jd.validate("flowret_journey");
+      jd.validateAllPaths("flowret_journey");
     }
 
     // build a set of steps and validate if any is repeated

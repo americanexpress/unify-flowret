@@ -271,11 +271,11 @@ public final class Rts {
 
   public ProcessContext reopenCase(String caseId, String ticket, boolean pendBeforeResume, String pendWb, ProcessVariables pvs) {
     if (pendBeforeResume == true) {
-      if (BaseUtils.isNullOrEmpty(pendWb)) {
+      if (BaseUtils.isNullOrEmptyAfterTrim(pendWb)) {
         throw new UnifyException("flowret_err_14", caseId);
       }
     }
-    if (BaseUtils.isNullOrEmpty(ticket)) {
+    if (BaseUtils.isNullOrEmptyAfterTrim(ticket)) {
       throw new UnifyException("flowret_err_15", caseId);
     }
 
