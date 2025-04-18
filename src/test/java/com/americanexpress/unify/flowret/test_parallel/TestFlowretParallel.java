@@ -25,6 +25,8 @@ import org.junit.jupiter.api.Test;
 import java.io.ByteArrayOutputStream;
 import java.lang.invoke.MethodHandles;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 /*
  * @author Deepak Arora
  */
@@ -42,7 +44,7 @@ public class TestFlowretParallel {
 
   @BeforeAll
   protected static void beforeAll() {
-    TestManager.init(System.out, new ByteArrayOutputStream(), 20, 30000);
+    TestManager.init(System.out, new ByteArrayOutputStream(), 10, 30000);
   }
 
   @BeforeEach
@@ -81,6 +83,18 @@ public class TestFlowretParallel {
     StepResponseFactory.addResponse("step_2_2", UnitResponseType.OK_PROCEED, "", "");
 
     StepResponseFactory.addResponse("step_2_3", UnitResponseType.ERROR_PEND, "error_wb", "");
+    StepResponseFactory.addResponse("step_2_3", UnitResponseType.OK_PROCEED, "", "");
+  }
+
+  // 3 branches, all 3 pend in different work baskets
+  public static void setScenario2_2() {
+    StepResponseFactory.addResponse("step_2_1", UnitResponseType.ERROR_PEND, ".route_1.1.", "");
+    StepResponseFactory.addResponse("step_2_1", UnitResponseType.OK_PROCEED, "", "");
+
+    StepResponseFactory.addResponse("step_2_2", UnitResponseType.ERROR_PEND, ".route_1.2.", "");
+    StepResponseFactory.addResponse("step_2_2", UnitResponseType.OK_PROCEED, "", "");
+
+    StepResponseFactory.addResponse("step_2_3", UnitResponseType.ERROR_PEND, ".route_1.3.", "");
     StepResponseFactory.addResponse("step_2_3", UnitResponseType.OK_PROCEED, "", "");
   }
 
@@ -133,6 +147,16 @@ public class TestFlowretParallel {
     }
   }
 
+  private static void startJourney(String journey, MemoryDao dao) {
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    String slaJson = null;
+
+    slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    if (dao.read("flowret_process_info-1.json") == null) {
+      rts.startCase("1", json, null, slaJson);
+    }
+  }
+
   @Test
   void testScenario1() {
     MemoryDao dao = new MemoryDao();
@@ -170,6 +194,34 @@ public class TestFlowretParallel {
     runJourney("parallel_test", dao);
     TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
     TestManager.myAssertEquals2(writeToConsole, simpleClassName + "." + methodName, "/flowret/test_parallel/test_scenario_2_1_expected.txt");
+  }
+
+  @Test
+  void testScenario2_2() {
+    // this is the scenario of testing the api getPendWorkbaskets
+    MemoryDao dao = new MemoryDao();
+    String methodName = new Object() {
+    }.getClass().getEnclosingMethod().getName();
+    String path = baseDirPath + simpleClassName + "/" + methodName + "/";
+    setScenario2_2();
+    init(dao, new TestComponentFactoryParallel(), new TestHandler(), null);
+    startJourney("parallel_test", dao);
+    TestManager.writeFiles(writeFiles, path, dao.getDocumentMap());
+    Wms wms = Flowret.instance().getWorkManagementService(dao, null, null);
+    String wb = wms.getPendWorkbasket("1");
+    PendStatus[] ps = wms.getPendWorkbaskets("1");
+    assertEquals(wb, ps[0].getWorkBasket());
+    assertEquals(ps[0].getExecPath(), ps[0].getWorkBasket());
+    assertEquals(ps[1].getExecPath(), ps[1].getWorkBasket());
+    assertEquals(ps[2].getExecPath(), ps[2].getWorkBasket());
+
+    wms = Flowret.instance().getWorkManagementService(dao, new TestWorkManager(), new TestSlaQueueManager());
+    wb = wms.getPendWorkbasket("1");
+    ps = wms.getPendWorkbaskets("1");
+    assertEquals(wb, ps[0].getWorkBasket());
+    assertEquals(ps[0].getExecPath(), ps[0].getWorkBasket());
+    assertEquals(ps[1].getExecPath(), ps[1].getWorkBasket());
+    assertEquals(ps[2].getExecPath(), ps[2].getWorkBasket());
   }
 
   @Test

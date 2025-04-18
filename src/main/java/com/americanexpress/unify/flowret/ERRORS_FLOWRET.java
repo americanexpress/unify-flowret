@@ -49,6 +49,8 @@ public class ERRORS_FLOWRET extends ErrorMap {
     map.put("flowret_err_18", "Next step name specified in branch does not exist. Journey name -> {0}, step name -> {1}, branch name -> {2}, next name -> {3}");
     map.put("flowret_err_19", "Step name cannot be end. Journey name -> {0}");
     map.put("flowret_err_20", "Next step name specified in a step is not defined. Journey name -> {0}, step name -> {1}, next name -> {2}");
+    map.put("flowret_err_21", "Cannot change work basket on a completed case. Case id -> {0}");
+    map.put("flowret_err_22", "Cannot call method on a completed case. Case id -> {0}");
   }
 
 }

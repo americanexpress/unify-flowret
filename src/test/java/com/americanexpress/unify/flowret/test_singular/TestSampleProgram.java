@@ -41,7 +41,9 @@ public class TestSampleProgram {
 
     // foo1("test_journey_wms");
     // foo2("test_journey_wms");
-    foo3("test_journey_1");
+    // foo3("test_journey_1");
+    // foo4("test_journey_wms");
+    foo5("test_journey_wms_1");
 
     Flowret.instance().close();
   }
@@ -61,7 +63,96 @@ public class TestSampleProgram {
   private static void foo3(String journey) {
     setScenario3();
     init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
-    runJourneyWithoutWms(journey);
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    String slaJson = null;
+
+    try {
+      slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    }
+    catch (Exception e) {
+      // nothing to do
+    }
+
+    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+      rts.startCase("1", json, null, slaJson);
+    }
+
+    while (true) {
+      try {
+        rts.resumeCase("1");
+      }
+      catch (Exception e) {
+        break;
+      }
+    }
+  }
+
+  private static void foo4(String journey) {
+    setScenario4();
+    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    String slaJson = null;
+
+    try {
+      slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    }
+    catch (Exception e) {
+      // nothing to do
+    }
+
+    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+      rts.startCase("1", json, null, slaJson);
+    }
+
+    Wms wms = Flowret.instance().getWorkManagementService(new FileDao(dirPath), new TestWorkManager(), new TestSlaQueueManager());
+    wms.changeWorkBasket("1", "wb_2");
+    wms.changeWorkBasket("1", "wb_3");
+    wms.changeWorkBasket("1", "wb_4");
+    wms.changeWorkBasket("1", "wb_5");
+
+    while (true) {
+      try {
+        rts.resumeCase("1");
+      }
+      catch (Exception e) {
+        break;
+      }
+    }
+  }
+
+  private static void foo5(String journey) {
+    setScenario5();
+    init(new FileDao(dirPath), new TestComponentFactory(), new TestHandler(), new TestSlaQueueManager());
+    String json = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + ".json");
+    String slaJson = null;
+
+    try {
+      slaJson = BaseUtils.getResourceAsString(TestFlowret.class, "/flowret/" + journey + "_sla.json");
+    }
+    catch (Exception e) {
+      // nothing to do
+    }
+
+    if (new File(dirPath + "flowret_process_info-1.json").exists() == false) {
+      rts.startCase("1", json, null, slaJson);
+      // we will pend in wb_1
+    }
+
+    rts.resumeCase("1");
+    // we will pend in wb_2
+
+    rts.resumeCase("1");
+    // we will pend in wb_3
+
+    Wms wms = Flowret.instance().getWorkManagementService(new FileDao(dirPath), new TestWorkManager(), new TestSlaQueueManager());
+    wms.changeWorkBasket("1", "wb_wms_1");
+    wms.changeWorkBasket("1", "wb_wms_2");
+
+    rts.resumeCase("1");
+    // we will pend in wb_4
+
+    rts.resumeCase("1");
+    // will finish
   }
 
   private static void runJourneyWithWms1(String journey) {
@@ -141,6 +232,22 @@ public class TestSampleProgram {
 
   public static void setScenario3() {
     StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_2", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_3", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_3", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_3", "");
+  }
+
+  public static void setScenario4() {
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
+  }
+
+  public static void setScenario5() {
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_1", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_2", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.ERROR_PEND, "wb_3", "");
+    StepResponseFactory.addResponse("step3", UnitResponseType.OK_PEND_EOR, "wb_4", "");
   }
 
 }

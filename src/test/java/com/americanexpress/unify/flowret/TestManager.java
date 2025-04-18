@@ -58,6 +58,11 @@ public class TestManager {
     }
   }
 
+  public static void writeToConsole(String s) {
+    previousConsole.println(s);
+    previousConsole.println();
+  }
+
   public static void reset() {
     TestManager.newConsole.reset();
   }

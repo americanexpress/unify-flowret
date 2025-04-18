@@ -19,6 +19,8 @@ import com.americanexpress.unify.jdocs.Document;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.*;
+
 /*
  * @author Deepak Arora
  */
@@ -42,6 +44,10 @@ public final class Wms {
 
   public void changeWorkBasket(String caseId, String newWb) {
     setup(caseId);
+
+    if (pi.isCaseCompleted() == true) {
+      throw new UnifyException("flowret_err_21", caseId);
+    }
 
     // update process info
     ExecPath ep = pi.getExecPath(pi.getPendExecPath());
@@ -72,18 +78,14 @@ public final class Wms {
 
     // enqueue / dequeue as required
     if (currWb.equals(newWb) == false) {
-      if (currWb.equals(tbcSlaWb) == false) {
         if (slaQm != null) {
           Utils.dequeueWorkBasketMilestones(pc, currWb, slad, slaQm);
         }
-      }
 
-      if (newWb.equals(tbcSlaWb) == false) {
         if ((slad != null) && (slaQm != null)) {
           Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, newWb, slad, slaQm);
         }
       }
-    }
 
     // copy the new work basket into prev work basket
     ep.setPrevPendWorkBasket(newWb);
@@ -115,7 +117,54 @@ public final class Wms {
 
   public String getPendWorkbasket(String caseId) {
     setup(caseId);
+
+    if (pi.isCaseCompleted() == true) {
+      throw new UnifyException("flowret_err_22", caseId);
+    }
+
     return pi.getPendWorkBasket();
+  }
+
+  public PendStatus[] getPendWorkbaskets(String caseId) {
+    setup(caseId);
+
+    if (pi.isCaseCompleted() == true) {
+      throw new UnifyException("flowret_err_22", caseId);
+    }
+
+    List<ExecPath> execPaths = pi.getExecPaths();
+    String firstWb = pi.getPendWorkBasket();
+    if (firstWb.isEmpty() == true) {
+      return new PendStatus[0];
+    }
+    String firstExecPath = null;
+
+    SortedMap<String, PendStatus> map = new TreeMap<>();
+    for (ExecPath execPath : execPaths) {
+      String wb = execPath.getPendWorkBasket();
+      if (wb.isEmpty()) {
+        continue;
+      }
+      if (wb.equals(firstWb) == true) {
+        firstExecPath = execPath.getName();
+      }
+      else {
+        PendStatus ps = new PendStatus(execPath.getPendWorkBasket(), execPath.getName());
+        map.put(execPath.getName(), ps);
+      }
+    }
+    PendStatus[] arPendStatus = new PendStatus[map.size() + 1];
+    arPendStatus[0] = new PendStatus(firstWb, firstExecPath);
+    int index = 1;
+    Set<String> keySet = map.keySet();
+    Iterator<String> iter = keySet.iterator();
+    while (iter.hasNext()) {
+      String key = iter.next();
+      PendStatus ps = map.get(key);
+      arPendStatus[index] = ps;
+      index++;
+    }
+    return arPendStatus;
   }
 
 }

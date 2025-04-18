@@ -21,11 +21,6 @@
         "type": "step",
         "component": "start_comp",
         "user_data": "Hello start comp",
-        "next": "step2"
-      },
-      {
-        "name": "step2",
-        "component": "comp2",
         "next": "step3"
       },
       {

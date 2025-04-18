@@ -5,7 +5,7 @@
 
 ---
 
-#### Whats in a name?
+#### What's in a name?
 
 Flowret is derived from the english word "floret" which is in turn derived from the french word "florete".
 The word floret means a small / budding flower. We brought in the component of "flow" into this word
@@ -31,7 +31,7 @@ Flowret is available as a jar file in Maven central with the following Maven coo
 ```pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.7.4</version>
+<version>1.7.5</version>
 ```
 
 ---

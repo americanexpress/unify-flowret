@@ -315,17 +315,17 @@ public class Utils {
 
     switch (type) {
       case BOOLEAN: {
-        vo = new Boolean(value);
+        vo = Boolean.valueOf(value);
         break;
       }
 
       case LONG: {
-        vo = new Long(value);
+        vo = Long.valueOf(value);
         break;
       }
 
       case INTEGER: {
-        vo = new Integer(value);
+        vo = Integer.valueOf(value);
         break;
       }
 
