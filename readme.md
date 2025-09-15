@@ -82,7 +82,7 @@ it horizontally scale-able along with the application
 
 ##### Process Definition
 
-1. Very simple process definition comprising of steps and routes in a JSON file
+1. Very simple process definition comprising steps and routes in a JSON file
 1. Very simple SLA milestone definition (SLA definition in short) comprising of a list of milestones in a JSON file
 1. Ability to define singular, static parallel or dynamic parallel routes
 1. Ability to hook up a route to an application rule to determine path to take
