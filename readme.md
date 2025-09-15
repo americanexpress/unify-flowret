@@ -1049,7 +1049,7 @@ to not overwhelm the JVM.
 
 Needless to say, the name of the branch returned should match with the name specified in the process definition.
 
-The application can set the unit response type to one of the following:
+For a `StepResponse`, the unit response type can be one of the following:
 
 ```java
 public enum UnitResponseType {
@@ -1070,6 +1070,19 @@ process is resumed. EOR stands for execute on resume.
 
 `ERROR_PEND` tells Flowret to pend as an error has occurred. In such case, this step will always be executed
 when the process is resumed
+
+For a `RouteResponse`, the unit response type can be one of the following.
+
+**Note that it is by design that a route is not allowed to pend. It is only a step that is allowed to pend.**
+
+Hence if a `RouteResponse` returns a unify response type of `OK_PEND` or `OK_PEND_EOR`, an exception is thrown.
+
+```java
+public enum UnitResponseType {
+  OK_PROCEED,
+  ERROR_PEND
+}
+```
 
 **What happens if multiple branches in a parallel process pend?**
 
