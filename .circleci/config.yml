@@ -7,6 +7,11 @@ workflows:
       - build:
           context:
             - maven_central_credentials
+          filters:
+            branches:
+              only:
+                - main
+
 jobs:
   build:
     docker:
