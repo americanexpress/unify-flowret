@@ -1,11 +1,11 @@
 ![Simple Workflow](flowret.png)
 
 
-### Flowret – A lightweight Java based orchestration engine
+## Flowret – A lightweight Java based orchestration engine
 
 ---
 
-#### What's in a name?
+### What's in a name?
 
 Flowret is derived from the english word "floret" which is in turn derived from the french word "florete".
 The word floret means a small / budding flower. We brought in the component of "flow" into this word
@@ -16,34 +16,59 @@ Once you have taken a look, if you like what you see, we would very much appreci
 motivated knowing that our
 work is getting traction and helping people in the community.
 
-And while you are here, may we mention another of our offerings which could be of interest:
+And while you are here, may we mention a couple of our other offerings which could be of interest:
 
 ***Unify-jdocs - a new way of working with JSON documents***
 
 https://github.com/americanexpress/unify-jdocs
 
+***Unify-simple-decision-table - A simple, lightweight Java based decision table implementation***
+
+https://github.com/americanexpress/unify-simple-decision-table
+
 ---
 
-#### Getting Flowret package
+### Getting Flowret package
 
 Flowret is available as a jar file in Maven central with the following Maven coordinates:
 
 ```pom
 <groupId>com.americanexpress.unify.flowret</groupId>
 <artifactId>unify-flowret</artifactId>
-<version>1.7.5</version>
+<version>2.0.0</version>
 ```
 
 ---
 
-#### Prerequisites
+### Version 2.x.x release alert
+
+Version 2.x.x is an upgrade that contains the following:
+1. Upgrades to the latest version of the underlying dependency unify-jdocs which requires a breaking change and hence moving up to 2.x.x
+2. Updated test cases
+3. Updated readme   
+4. Bump up of few underlying dependencies 
+
+For migrating to 2.x.x, the only breaking change is the requirement to have the JDocument class initialized before initializing Flowret.
+This can be done by calling the method `JDocument.init` like below:
+
+`JDocument.init(new Initializer());`
+
+Note that the above initializes JDocument (unify-jdocs or JDocs) with default initialization and configuration values which
+should be sufficient for using Flowret. However, it may happen that the application uses JDocs independently of Flowret.
+In this situation, it needs to be ensured that JDocs is initialized before initializing Flowret. Furthermore, the
+application may also wish to change default JDocs initialization and configuration values for which the documentation of
+JDocs may be referred to (link above).
+
+---
+
+### Prerequisites
 Flowret works with Java 8 and later.
 
 Make sure that log4j configuration file is found in the class path.
 
 ---
 
-#### Glossary
+### Glossary
 Term | Description
 ---- | -----------
 Process Definition | A defined sequence of steps (sequential / parallel) and routing information
@@ -58,7 +83,7 @@ SLA Milestone | An action to be taken at a specified time in the future
 
 ---
 
-#### Design Goals
+### Design Goals
 * Extreme flexibility in stitching together journeys
 * Enable true technical parallel processing enabling faster performance and SLAs
 * Simplify process definition. Keep things as simple as possible
@@ -68,7 +93,7 @@ SLA Milestone | An action to be taken at a specified time in the future
 
 ---
 
-#### Architecture
+### Architecture
 * Core Java 8.0. Only depends on custom JDocs library which in turn depends on
 Jackson JSON parsing open source library
 No dependency on non-core heavy weight or commercial products
@@ -78,9 +103,9 @@ it horizontally scale-able along with the application
 
 ---
 
-#### Capability and Feature Summary
+### Capability and Feature Summary
 
-##### Process Definition
+#### Process Definition
 
 1. Very simple process definition comprising steps and routes in a JSON file
 1. Very simple SLA milestone definition (SLA definition in short) comprising of a list of milestones in a JSON file
@@ -90,7 +115,7 @@ it horizontally scale-able along with the application
 Locks both the process definition and SLA definition for a case for its life time
 thereby eliminating errors due to definitions changing while a case is being processed
 
-##### Parallel Processing
+#### Parallel Processing
 1. An extremely critical feature required to reduce end to end processing time for a
 case
 1. True parallel processing available out of box. As a side note, most of the mainstream
@@ -103,7 +128,7 @@ emanating from a route, they will still be executed one at a time.
 1. Configurable number of threads from a pool used for parallel processing or unbounded child threads - the choice is
    yours
 
-##### State Management
+#### State Management
 1. Implements "resume from where it left off" functionality
 1. Can support multiple data stores to persist state via a published API including
 RDBMS / NoSQL / File System. File system is a quick and efficient way to test
@@ -116,12 +141,12 @@ in the process definition or when process pends / completes
 immediately after it executes a step or a route. This makes it crash proof to the last but one executed
 step / route
 
-##### Audit Logging
+#### Audit Logging
 1. Audit log of all execution paths and process variables written out after execution of each step / route
 2. Minimizes the possibility of having orphaned cases
 (cases where we do not know which step was executed last due to data loss due to a crash)
 
-##### Ticket Management
+#### Ticket Management
 1. “Go to step” feature implemented via tickets
 1. Ticket can be raised by any step
 1. On a ticket being raised, control gets transferred to the step
@@ -136,7 +161,7 @@ messy, tedious to build, cumbersome to use and error prone to maintain.
 This ticket feature would eliminate the need to specify an evaluation condition
 after each step thereby keeping the process definition clean and focused on business flow.
 
-##### Process Variables
+#### Process Variables
 1. Ability to define process variables with initial values as part of process definition
 1. Ability to provide all process variables to steps and routes invoked as part of process flow
 1. Ability for each step / route to modify existing / add new process variables to the case
@@ -156,14 +181,14 @@ This variable would be used for routing e.g.
 if it is false, take the application to the step where we request address information
 from the customer else not
 
-##### Quality
-1. Can be run as a stand alone Java application on a laptop
+#### Ease of use
+1. Can be run as a standalone Java application on a laptop
 1. Steps and routes can be easily mocked for testing various permutations and combinations of routing
 1. A journey can be tested independently using mocks of steps / routes. This helps decouple
 the journey definition and testing from the actual implementation of the steps
 and routes
 
-##### Application call back Events
+#### Application call back Events
 1. Ability to provide call back events to applications / consumers e.g.
 on process start, on process pend etc.
 1. The application may use these call back events for house-keeping tasks
@@ -171,7 +196,7 @@ and data synchronization during parallel processing. Example -> on process resum
 the application may load data into memory and on process pend,
 may write the data back to database and release memory
 
-##### Crash proof	
+#### Crash proof	
 1. Ability to write out the state of the process after execution of each step and route
 1. Provides the following variables which can be used to identify "orphaned" cases
     1. "pend_exec_path" - the name of the execution path if case is pended else empty
@@ -194,7 +219,7 @@ is_complete as false and a timestamp which is x units exceeded
 
 ---
 
-#### Getting started in 5 minutes
+### Getting started in 5 minutes
 
 Please refer to the packages `com.americanexpress.unify.flowret.sample` and `/resources/flowret/sample` in the test
 folder. All Java class files and resources described below can be found there. You can also run the sample by running
@@ -206,12 +231,12 @@ In case you would like to create your own project and copy the sample files ther
 2. Make sure that log4j2.json is found in the root of the resources path of your project. You can take a sample from the
    location `/resources/log4j2.json` in the test folder
 
-##### Step 1: Create a process definition file
+#### Step 1: Create a process definition file
 
 Please refer to the file `/resources/flowret/sample/order_part.json` under the test folder. The contents of this file
 are the same as the contents of the process flow as defined in the next section "Defining a process".
 
-##### Step 2: Create an object to persist Flowret data
+#### Step 2: Create an object to persist Flowret data
 
 Please refer to the file `com.americanexpress.unify.flowret.sample.SampleDao.java` in the test folder.
 
@@ -223,7 +248,7 @@ This is Flowret's way of saying - "Give me an object which I can use to persist 
 You will note that this object expects to be provided a path to a valid directory on the file system. More on this later
 in step 7.
 
-##### Step 3: Create a sample step
+#### Step 3: Create a sample step
 
 Please refer to the file `com.americanexpress.unify.flowret.sample.SampleStep.java` in the test folder.
 
@@ -236,7 +261,7 @@ the `executeStep` method".
 You will note here that we have a single class file to represent all steps in the process definition. In reality,
 applications may have one class for one step.
 
-##### Step 4: Create a sample route
+#### Step 4: Create a sample route
 
 Please refer to the file `com.americanexpress.unify.flowret.sample.SampleRoute.java` in the test folder.
 
@@ -249,7 +274,7 @@ the `executeRoute` method".
 Again, you will note here that we have a single class file to represent all routes in the process definition. In
 reality, applications may have one class per route.
 
-##### Step 5: Create a sample component factory
+#### Step 5: Create a sample component factory
 
 Please refer to the file `com.americanexpress.unify.flowret.sample.SampleComponentFactory.java` in the test folder.
 
@@ -261,7 +286,7 @@ our example) and an object which implements `InvokableRoute` in case of a route
 
 This is Flowret's way of saying - "Give me a factory which I can call to get a Step or a Route to execute".
 
-##### Step 6: Create a sample event handler
+#### Step 6: Create a sample event handler
 
 Please refer to the file `com.americanexpress.unify.flowret.sample.SampleEventHandler.java` in the test folder.
 
@@ -270,21 +295,34 @@ the `EventHandler` interface.
 
 This is Flowret's way of saying - "Give me an object to which I can deliver case lifecycle events".
 
-##### Step 7: Create a main program and run the sample process
+#### Step 7: Create a main program and run the sample process
 
-***When you run this program, the first thing it does is delete all files in the directory specified. Hence please take
+***When you run this program, the first thing it does is delete all files in the directory specified. Hence, please take
 care to not point it to a directory where you may have content.***
 
-Please refer to the file `com.americanexpress.unify.flowret.sample.FlowretSample.java` in the test folder.
+Please refer to the file `com.americanexpress.unify.flowret.sample.FlowretSample.java` containing the main method
+in the test folder.
 
 Please note the following:
 
 1. The directory path used for reading and writing Flowret files is `C:/Temp/flowret/`. You can change it to whatever
    works for you. Note that this is a Windows path. If you are on Mac, please change this path accordingly
-2. The directory path should be a valid path and should already exist. Ideally, you want to to make sure it is empty to
+2. The directory path should be a valid path and should already exist. Ideally, you want to make sure it is empty to
    start with
 
-###### Initialize Flowret
+##### Explanation of the main program
+
+###### Initialize JDocument and Flowret
+
+Flowret internally uses `JDocument` class for JSON reading and writing. This class is part of unify-jdocs library and needs
+to be initialized before use. The same can be done like so:
+
+```java
+JDocument.init(new Initializer());
+```
+
+Note that the above initializes the initialization and configuration (runtime) properties of JDocument to their default values which for the purpose of using
+Flowret is sufficient. Next we initialize Flowret like below:
 
 ```java
 ERRORS_FLOWRET.load();
@@ -304,33 +342,31 @@ Rts rts = Flowret.instance().getRunTimeService(dao, factory, handler, null);
 
 ###### Get process definition and start the case
 
-Note that we start a case with case id as 1.
+Note that we start a case with case id as 1 (you could use any value here - you only need to make sure that the value
+is unique across cases).
 
 ```java
 String json = BaseUtils.getResourceAsString(FlowretSample.class, "/flowret/sample/order_part.json");
 rts.startCase("1", json, null, null);
 try {
-   while (true) {
-     logger.info("\n");
-     rts.resumeCase("1");
-   }
+  while (true) {
+    rts.resumeCase("1");
+    logger.info("\n");
+  }
 }
 catch (UnifyException e) {
-  logger.error("Exception -> " + e.getMessage());
+  if (e.getMessage().equals("Cannot resume a case that has already completed. Case id -> 1") == false) {
+    logger.error("Exception -> " + e.getMessage());
+  }
 }
 ```
 
 Note that we have a while loop that tries to resume the case till it hits an exception. This is to resume the case
 multiple times in case of more than one pends (one resume for each pend) and take the case to completion.
 
-You can see the logs in the console which will tell you of the progress. You may safely ignore the last exception
-message shown below.
+You can see the logs in the console which will tell you of the progress.
 
-```java
-[americanexpress.unify.flowret.sample.FlowretSample] ERROR:Exception -> Cannot resume a case that has already completed.Case id -> 1
-```
-
-##### Step 8: Experiment a bit
+#### Step 8: Experiment a bit
 
 Try suppressing the writing of `flowret_audit_log` files by specifying below in `FlowretSample.java`:
 
@@ -360,7 +396,7 @@ else {
 }
 ```
 
-##### Step 9: Run unit test cases
+#### Step 9: Run unit test cases
 
 Try running the unit tests which are defined under the following folders in the test package:
 
@@ -387,9 +423,11 @@ It would be your responsibility to clean up any contents in these directories sh
 Turning on the ```writeToConsole``` will output the log messages to console. This is useful when you want to see the
 progress of the test case execution.
 
+**This concludes our section on getting started in 5 minutes.**
+
 ---
 
-#### Defining a process
+### Defining a process
 
 A process is defined in a JSON file. Consider a simple workflow to order a specific part:
 
@@ -464,7 +502,7 @@ The following would be the JSON for representing this flow:
 }
 ```
 
-##### Notes:
+**Notes:**
 
 **The tickets block**
 
@@ -546,7 +584,7 @@ could be used to specify any additional information to be passed to the applicat
 
 ---
 
-#### Creating a parallel processing flow
+### Creating a parallel processing flow
 
 Parallel processing in a flow can be easily incorporated by using `p_route` / `p_route_dynamic` and `p_join` constructs.
 Below is a sample parallel processing flow:
@@ -648,14 +686,40 @@ step should be outside of the outest `p_route` / `p_join` construct
 
 ---
 
-#### Initialize Flowret - needs to be done only once at startup
+### Initializing Flowret - needs to be done only once at startup
+
+Flowret internally uses unify-jdocs library for JSON reading and writing. The same needs to be initialized before initializing
+Flowret.
 
 ```java
-  Flowret.init(idleTimeout,typeIdSep);
-        Flowret.init(idleTimeout,typeIdSep,errorWorkbasket);
-        Flowret.init(maxThreads,idleTimeout,typeIdSep);
-        Flowret.init(maxThreads,idleTimeout,typeIdSep,errorWorkbasket);
+JDocument.init(new Initializer());
 ```
+
+You can initialize Flowret by calling one of the below methods:
+
+```java
+Flowret.init(int idleTimeout, String typeIdSep);
+Flowret.init(int idleTimeout, String typeIdSep, String errorWorkbasket);
+Flowret.init(int maxThreads, int idleTimeout, String typeIdSep);
+Flowret.init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket);
+```
+
+`int idleTimeout`
+
+Specifies the idle time of a thread in the parallel processing thread pool after which it will be terminated to conserve
+system resources.
+
+`String typeIdSep`
+
+Specifies the character to be used as the separator between the type and id fields in the name of the document to be
+written to the data store (via dao object). Flowret uses the following document naming
+convention `<type><separator><id>`
+
+`String errorWorkBasket`
+
+Specifies the name of the work basket to be used in case Flowret encounters an error after the step / route has been
+executed but Flowret encounters an error while processing the application event or encounters an internal error. This
+value will be written out to the process info file.
 
 `int maxThreads`
 
@@ -676,24 +740,9 @@ to be executed, a new thread will be created (
 as compared to the fixed thread pool where the threads are already created and ready to run). Very important to note is
 that this option is not bounded. In other words, clients could run multiple parallel processing cases such that the pod
 gets overwhelmed with the high number of threads / processing. It is left up to the clients to take care of such
-scenarios and put some kind of safe guards.
+scenarios and put some kind of safeguards.
 
-`int idleTimeout`
-
-Specifies the idle time of a thread in the parallel processing thread pool after which it will be terminated to conserve
-system resources.
-
-`String typeIdSep`
-
-Specifies the character to be used as the separator between the type and id fields in the name of the document to be
-written to the data store (via dao object). Flowret uses the following document naming
-convention `<type><separator><id>`
-
-`String errorWorkBasket`
-
-Specifies the name of the work basket to be used in case Flowret encounters an error after the step / route has been
-executed but Flowret encounters an error while processing the application event or encounters an internal error. This
-value will be written out to the process info file.
+---
 
 At this point of time, we can describe the various documents that Flowret writes to the data store as it executes a
 case.
@@ -718,7 +767,7 @@ execution paths and process variables
 
 ---
 
-#### Get an instance of Flowret
+### Getting an instance of Flowret
 Flowret is a singleton object.
 
 ```java
@@ -727,7 +776,7 @@ Flowret flowret = Flowret.instance();
 
 ---
 
-#### Get runtime service of Flowret
+### Getting runtime service of Flowret
 ```java
 Rts rts = Flowret.getRunTimeService(dao, factory, handler, SlaQueueManager);
 ```
@@ -785,7 +834,7 @@ described later in the section on SLA milestone management.
 
 ---
 
-#### Flowret Application Events
+### Flowret Application Events
 Flowret will inform the application of the following events types via the invoke method of the EventHandler object:
 
 ```java
@@ -801,7 +850,7 @@ public enum EventType {
 
 ---
 
-#### Flowret Process Context
+### Flowret Process Context
 
 Along with the event type, the process context will also be passed. The process context is provided as an instance
 of class `ProcessContext` which has the following fields which can be accessed via the getter methods:
@@ -879,7 +928,7 @@ The process context variables will be set as below while invoking events. Other 
 
 ---
 
-#### Note on Execution Paths
+### Notes on Execution Paths
 
 An execution path is the thread on which a step or a route in the process is executed. When a process is started, 
 it is always on the root thread denoted by `.` as the execution path. Whenever a parallel route is encountered,
@@ -912,7 +961,7 @@ to be part of the route name or the branch name.*
  
 --- 
 
-#### Start a case
+### Starting a case
 
 Invoke below method on run time service:
 
@@ -944,7 +993,7 @@ main process definition changes.
 
 ---
 
-#### Execution of process flow
+### Execution of process flow
 
 When a case is started or resumed, Flowret startes executing the workflow defined in the journey file.
 For each step / route encountered, it invokes the `getObject` method in the `ProcessComponentFactory` object provided
@@ -1073,16 +1122,16 @@ when the process is resumed
 
 For a `RouteResponse`, the unit response type can be one of the following.
 
-**Note that it is by design that a route is not allowed to pend. It is only a step that is allowed to pend.**
-
-Hence if a `RouteResponse` returns a unify response type of `OK_PEND` or `OK_PEND_EOR`, an exception is thrown.
-
 ```java
 public enum UnitResponseType {
   OK_PROCEED,
   ERROR_PEND
 }
 ```
+
+*Note that it is by design that a route is not allowed to pend. It is only a step that is allowed to pend.*
+
+Hence, if a `RouteResponse` returns a unify response type of `OK_PEND` or `OK_PEND_EOR`, an exception is thrown.
 
 **What happens if multiple branches in a parallel process pend?**
 
@@ -1098,7 +1147,7 @@ In future versions, a feature may be provided for Flowret to return a list of pe
 
 ---
 
-#### Resume a case
+### Resuming a case
 
 In case a process had been started earlier and had pended, the application can resume the same by the following call:
 
@@ -1110,22 +1159,22 @@ rts.resumeCase(caseId);
 
 ---
 
-#### Reopen a case
+### Reopening a case
 
 A case which has already been finalized can be reopened. In order to do this, there must be a ticket defined in the
 definition which tells Flowret where to begin the execution from when reopen is called. This ticket needs to be passed
 into the reopen method as below:
 
 ```java
-rts.reopenCase(String caseId,String ticket,boolean pendBeforeResume,String pendWorkbasket);
-        rts.reopenCase(String caseId,String ticket,boolean pendBeforeResume,String pendWorkbasket,ProcessVariables pvs);
+rts.reopenCase(String caseId, String ticket, boolean pendBeforeResume, String pendWorkbasket);
+rts.reopenCase(String caseId, String ticket, boolean pendBeforeResume, String pendWorkbasket, ProcessVariables pvs);
 ```
 
 The user can also specify if the case is to be pended in a workbasket after reopen. If this is set to true, the name of
 the pend work basket needs to be specified. The user can also provide a list of process variables which will be added /
 updated to the already existing process variables.
 
-#### Audit logging
+### Audit logging
 
 Flowret logs information to the data store (as specified by the Dao) after it executes each step / route. Each entry
 comprises of a JSON document with the name as described before:
@@ -1232,7 +1281,7 @@ the application may want to explore the possibility of using idempotent services
 
 ---
 
-#### Dynamic Parallel Flow
+### Dynamic Parallel Flows
 
 A dynamic parallel flow is one where
 1. We do not know the number of outgoing branches in advance
@@ -1326,7 +1375,7 @@ Below is the process definition json. Note the use of the "p_route_dynamic" rout
 }
 ```
 
-#### SLA Management Framework
+### SLA Management Framework
 
 An SLA management framework is one that is used to manage all aspects of SLA milestones.
 An SLA milestone is an event which is to be executed sometime in the future. Given below are a couple 
@@ -1499,7 +1548,7 @@ trigger times are relative to "t0" where "t0" is the time when the first milesto
 in time as the counter. The example JSON above describes this more clearly. This fields is also optional. If not specified
 the default assumed should be 1.  
 
-#### Starting a case with SLA milestones
+### Starting a case with SLA milestones
 
 The prerequisite to handling SLA milestones is for the application to provide an object that will handle
 the SLA milestone events triggered by Flowret. This object needs to be supplied to Flowret at the time
@@ -1531,7 +1580,7 @@ rts.startCase(caseId, journeyName, journeyJson, processVariables, journeySlaJson
 A null value can be passed in case no SLA milestones are to be used. Flowret will store this definition
 with the instance of the case and will reference it to invoke SLA events on the application.
 
-#### SLA Queue Management
+### SLA Queue Management
 
 At specific points in the process, Flowret will call SLA Queue Manager object methods as required
 asking the application to enqueue or dequeue events. The actual enqueuing and dequeuing of milestones
@@ -1559,7 +1608,7 @@ responsibility of the application to track such milestones.
 Flowret will invoke the dequeueAll method to inform application that since the case is ending,
 all milestones need to be cleared.
 
-#### Executing SLA milestones (also known as SLA Action Management)
+### Executing SLA milestones (also known as SLA Action Management)
 
 Flowret only informs the application of milestones to be enqueued or dequeued. It does not play
 a part in actually executing the enqueued milestones when it is time for them to be executed.
@@ -1578,7 +1627,7 @@ either be marked as processed or moved over to a different table.
 
 ---
 
-#### Work Management
+### Work Management
 
 We start with a brief description of work baskets.
 In BPM workflow engines, work baskets are nothing but places where an application is
@@ -1654,9 +1703,9 @@ which the case is pended as below:
 
 ---
 
-#### FAQ
+### FAQ
 
-##### How do I do retry handling?
+#### How do I do retry handling?
 
 Flowret is first and foremost a pure Orchestrator. In order to keep it simple and efficient, it does not deal
 with retry handling and expects the application to take care of the same. In other orchestrators,
@@ -1666,13 +1715,13 @@ complexity as it is very much possible for this layer to be built in the applica
 The application could create a retry framework that could take care of retries before
 returning to Flowret.  
 
-##### How can I create a process flow graphically?
+#### How can I create a process flow graphically?
 
 At present, the only way to create a process flow is manually, first by creating the process flow diagram
 and then by creating the JSON file manually. However, a UI application to create the flow graphically is
 in the pipeline.
 
-##### How do I test my process definition?
+#### How do I test my process definition?
 Testing of a process flow can be done independently by writing your own event handler,
 process component factory and a Flowret Dao object that reads and writes from the local file system. A
 sample implementation of cuh objects is provided in the test folder.
@@ -1683,7 +1732,7 @@ be tested independently.
 
 ---
 
-##### What next?
+#### What next?
 
 Go through the unit test cases in the source code. Unit test cases are available in the location `src/test`
 
@@ -1691,7 +1740,7 @@ Provide us feedback. We would love to hear from you.
 
 ---
 
-##### Author:
+#### Author:
 Deepak Arora, GitHub: @deepakarora3, Twitter: @DeepakAroraHi
 
 ---

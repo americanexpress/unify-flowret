@@ -17,6 +17,8 @@ package com.americanexpress.unify.flowret;
 import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.flowret.test_singular.TestFlowret;
 import com.americanexpress.unify.jdocs.Document;
+import com.americanexpress.unify.jdocs.Initializer;
+import com.americanexpress.unify.jdocs.JDocument;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -42,6 +44,8 @@ public class TestManager {
       TestManager.newConsole = newConsole;
       System.setOut(new PrintStream(newConsole));
     }
+
+    JDocument.init(new Initializer());
 
     if (isLoaded == false) {
       isLoaded = true;

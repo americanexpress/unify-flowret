@@ -17,7 +17,7 @@
           xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
     <servers>
         <server>
-            <id>ossrh</id>
+            <id>central</id>
             <username>${env.MAVEN_CENTRAL_USERNAME}</username>
             <password>${env.MAVEN_CENTRAL_PASSWORD}</password>
         </server>
@@ -27,4 +27,15 @@
             <password>${env.GITHUB_EMAIL}</password>
         </server>
     </servers>
+    <profiles>
+        <profile>
+            <id>central</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <gpg.passphraseEnvName>ORG_GRADLE_PROJECT_signingPassword</gpg.passphraseEnvName>
+            </properties>
+        </profile>
+    </profiles>
 </settings>
