@@ -16,6 +16,8 @@ package com.americanexpress.unify.flowret.test_singular;
 
 import com.americanexpress.unify.base.BaseUtils;
 import com.americanexpress.unify.flowret.*;
+import com.americanexpress.unify.jdocs.Initializer;
+import com.americanexpress.unify.jdocs.JDocument;
 
 import java.io.File;
 
@@ -24,15 +26,18 @@ import java.io.File;
  */
 public class TestSampleProgram {
 
-  private static String dirPath = "./target/test-data-results/";
+  private static String dirPath = "target/test-data-results/";
   private static Rts rts = null;
 
   public static void main(String[] args) {
     File directory = new File(dirPath);
+    System.out.println(directory.getAbsolutePath());
     if (!directory.exists()) {
-      directory.mkdir();
+      directory.mkdirs();
     }
     TestManager.deleteFiles(dirPath);
+
+    JDocument.init(new Initializer());
 
     ERRORS_FLOWRET.load();
     Flowret.init(10, 30000, "-");

@@ -19,6 +19,8 @@ import com.americanexpress.unify.base.UnifyException;
 import com.americanexpress.unify.flowret.ERRORS_FLOWRET;
 import com.americanexpress.unify.flowret.Flowret;
 import com.americanexpress.unify.flowret.Rts;
+import com.americanexpress.unify.jdocs.Initializer;
+import com.americanexpress.unify.jdocs.JDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +41,8 @@ public class FlowretSample {
     // clear out base directory
     deleteFiles(DIR_PATH);
 
-    // initialize flowret
+    // initialize Jdocs and flowret
+    JDocument.init(new Initializer());
     ERRORS_FLOWRET.load();
     Flowret.init(10, 30000, "-");
     Flowret.instance().setWriteAuditLog(true);
@@ -60,12 +63,14 @@ public class FlowretSample {
     // resume if we had pended somewhere till an exception is thrown
     try {
       while (true) {
-        logger.info("\n");
         rts.resumeCase("1");
+        logger.info("\n");
       }
     }
     catch (UnifyException e) {
-      logger.error("Exception -> " + e.getMessage());
+      if (e.getMessage().equals("Cannot resume a case that has already completed. Case id -> 1") == false) {
+        logger.error("Exception -> " + e.getMessage());
+      }
     }
 
   }

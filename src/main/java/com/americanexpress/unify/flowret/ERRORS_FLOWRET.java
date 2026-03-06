@@ -51,6 +51,7 @@ public class ERRORS_FLOWRET extends ErrorMap {
     map.put("flowret_err_20", "Next step name specified in a step is not defined. Journey name -> {0}, step name -> {1}, next name -> {2}");
     map.put("flowret_err_21", "Cannot change work basket on a completed case. Case id -> {0}");
     map.put("flowret_err_22", "Cannot call method on a completed case. Case id -> {0}");
+    map.put("flowret_err_23", "JDocument is not initialized. Please initialize the underlying JDocument library before initializing Flowret");
   }
 
 }

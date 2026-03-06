@@ -87,6 +87,11 @@ public class Flowret {
   }
 
   public static void init(int maxThreads, int idleTimeout, String typeIdSep, String errorWorkbasket) {
+    // check if underlying library is not initialized
+    if (JDocument.isInitialized() == false) {
+      throw new UnifyException("flowret_err_23");
+    }
+
     Flowret am = instance();
     am.maxThreads = maxThreads;
     am.idleTimeout = idleTimeout;
