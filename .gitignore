@@ -77,3 +77,4 @@ Desktop.ini
 .merge_file*
 **/nbactions.xml
 /bin/
+.mvn/wrapper/maven-wrapper.jar
