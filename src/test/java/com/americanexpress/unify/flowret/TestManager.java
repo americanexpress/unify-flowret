@@ -45,7 +45,9 @@ public class TestManager {
       System.setOut(new PrintStream(newConsole));
     }
 
-    JDocument.init(new Initializer());
+    if (JDocument.isInitialized() == false) {
+      JDocument.init(new Initializer());
+    }
 
     if (isLoaded == false) {
       isLoaded = true;

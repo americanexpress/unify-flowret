@@ -78,14 +78,14 @@ public final class Wms {
 
     // enqueue / dequeue as required
     if (currWb.equals(newWb) == false) {
-        if (slaQm != null) {
-          Utils.dequeueWorkBasketMilestones(pc, currWb, slad, slaQm);
-        }
-
-        if ((slad != null) && (slaQm != null)) {
-          Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, newWb, slad, slaQm);
-        }
+      if (slaQm != null) {
+        Utils.dequeueWorkBasketMilestones(pc, currWb, slad, slaQm);
       }
+
+      if ((slad != null) && (slaQm != null)) {
+        Utils.enqueueWorkBasketMilestones(pc, SlaMilestoneSetupOn.work_basket_entry, newWb, slad, slaQm);
+      }
+    }
 
     // copy the new work basket into prev work basket
     ep.setPrevPendWorkBasket(newWb);
